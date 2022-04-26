@@ -24,10 +24,10 @@ var Configuration = configuration{}
 func init() {
 	filePath := path.Join(os.Getenv("GOPATH"), "src/github.com/Czcan/Timeline/config/config.json")
 	file, err := os.Open(filePath)
-	defer file.Close()
 	if err != nil {
 		fmt.Printf("Open file error : %v\n", err)
 	}
+	defer file.Close()
 
 	decoder := json.NewDecoder(file)
 	err = decoder.Decode(&Configuration)
@@ -36,40 +36,7 @@ func init() {
 	}
 }
 
-// var Config = struct {
-// 	DB   string
-// 	Port string
-// }{}
-
-// func MustGetAPPConfig() {
-// 	// if _APPConfig != nil {
-// 	// 	return *_APPConfig
-// 	// }
-
-// 	// appconfig := &APPConfig{}
-// 	// appconfig := &Config{}
-// 	err := configor.Load(&Config, "config.json")
-// 	if err != nil {
-// 		panic(err)
-// 	}
-
-// 	// _APPConfig = appconfig
-// 	// return *_APPConfig
-
-// 	fmt.Println(Config)
-
-// }
-
 func MustGetAPPDB() *gorm.DB {
-	// c := MustGetAPPConfig()
-	// DB, err := gorm.Open("mysql", c.DB)
-	// if err != nil {
-	// 	panic(err)
-	// }
-
-	// DB.LogMode(true)
-	// return DB
-	// MustGetAPPConfig()
 	DB, err := gorm.Open("mysql", Configuration.APPConfig.DB)
 	if err != nil {
 		panic(err)
