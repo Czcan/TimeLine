@@ -1,0 +1,4 @@
+appconfig:
+   db: root:12345@tcp(127.0.0.1:3306)/timeline?parseTime=True&loc=Local&charset=utf8
+   port: :8099
+  

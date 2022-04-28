@@ -15,6 +15,5 @@ func main() {
 	defer db.Close()
 
 	router := server.New(db)
-
-	log.Fatal(http.ListenAndServe(config.Configuration.APPConfig.Port, router))
+	log.Fatal(http.ListenAndServe(config.Config.APPConfig.Port, router))
 }
