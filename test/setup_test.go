@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"net/http/httptest"
 	"strings"
-	"timeline/config"
-	"timeline/models"
-	"timeline/server"
 
+	"github.com/Czcan/TimeLine/config"
+	"github.com/Czcan/TimeLine/models"
+	"github.com/Czcan/TimeLine/server"
 	"github.com/jinzhu/gorm"
 )
 

@@ -4,9 +4,10 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"timeline/config"
-	"timeline/models"
-	"timeline/server"
+
+	"github.com/Czcan/TimeLine/config"
+	"github.com/Czcan/TimeLine/models"
+	"github.com/Czcan/TimeLine/server"
 )
 
 func main() {

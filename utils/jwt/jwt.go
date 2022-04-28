@@ -3,8 +3,8 @@ package jwt
 import (
 	"errors"
 	"time"
-	"timeline/config"
 
+	"github.com/Czcan/TimeLine/config"
 	"github.com/golang-jwt/jwt"
 )
 
