@@ -1,67 +1,68 @@
 package config
 
 import (
-	"fmt"
+	"os"
+	"path/filepath"
+	"sync"
 
 	"github.com/jinzhu/configor"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 )
 
-// type configuration struct {
-// 	APPConfig appconfig
-// }
+type AppConfig struct {
+	DB        string
+	Port      string `default:":8099"`
+	SecretKey string
+}
 
-// type appconfig struct {
-// 	Port string `default:"8099"`
-// 	DB   string
-// }
+var (
+	_AppConfig *AppConfig
+	once       sync.Once
+)
 
-// var Configuration = configuration{}
-
-// func init() {
-// 	filePath := path.Join(os.Getenv("GOPATH"), "src/github.com/Czcan/Timeline/config/config.json")
-// 	file, err := os.Open(filePath)
-// 	if err != nil {
-// 		fmt.Printf("Open file error : %v\n", err)
-// 	}
-// 	defer file.Close()
-
-// 	decoder := json.NewDecoder(file)
-// 	err = decoder.Decode(&Configuration)
-// 	if err != nil {
-// 		fmt.Printf("Init config error: %v\n", err)
-// 	}
-// }
-
-// func MustGetAPPDB() *gorm.DB {
-// 	DB, err := gorm.Open("mysql", Configuration.APPConfig.DB)
-// 	if err != nil {
-// 		panic(err)
-// 	}
-// 	fmt.Println("Success to connect!")
-// 	fmt.Println("DB:", Configuration.APPConfig.DB)
-// 	fmt.Println("HOST Port:", Configuration.APPConfig.Port)
-// 	DB.LogMode(true)
-// 	return DB
-// }
-
-var Config = struct {
-	APPConfig struct {
-		DB   string
-		Port string `default:":8099"`
+func MustGetAppConfig() AppConfig {
+	root := inferRootDir()
+	if _AppConfig == nil {
+		once.Do(
+			func() {
+				appConfig := &AppConfig{}
+				err := configor.Load(appConfig, root+"/config.yml")
+				if err != nil {
+					panic(err)
+				}
+				_AppConfig = appConfig
+			})
 	}
-}{}
+	return *_AppConfig
+}
 
-func MustGetAPPDB() *gorm.DB {
-	configor.Load(&Config, "config.yml")
-	DB, err := gorm.Open("mysql", Config.APPConfig.DB)
+func MustGetDB() *gorm.DB {
+	c := MustGetAppConfig()
+	DB, err := gorm.Open("mysql", c.DB)
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println("Success to connect!")
-	fmt.Println("DB:", Config.APPConfig.DB)
-	fmt.Println("HOST Port:", Config.APPConfig.Port)
-	DB.LogMode(true)
+	// DB.LogMode(true)
 	return DB
+}
+
+func inferRootDir() string {
+	cwd, err := os.Getwd()
+	if err != nil {
+		panic(err)
+	}
+	var infer func(d string) string
+	infer = func(d string) string {
+		if exists(d + "/config.yml") {
+			return d
+		}
+		return infer(filepath.Dir(d))
+	}
+
+	return infer(cwd)
+}
+func exists(filename string) bool {
+	_, err := os.Stat(filename)
+	return err == nil || os.IsExist(err)
 }

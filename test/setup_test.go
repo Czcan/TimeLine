@@ -8,7 +8,6 @@ import (
 	"timeline/models"
 	"timeline/server"
 
-	"github.com/jinzhu/configor"
 	"github.com/jinzhu/gorm"
 )
 
@@ -23,9 +22,10 @@ type Record struct {
 }
 
 func setup() {
-	// appconfig := config.Configuration.APPConfig
-	configor.Load(&config.Config, "config.yml")
-	DB, err = gorm.Open(config.Config.APPConfig.DB)
+	c := config.MustGetAppConfig()
+
+	var err error
+	DB, err = gorm.Open("mysql", c.DB)
 	if err != nil {
 		panic(err)
 	}

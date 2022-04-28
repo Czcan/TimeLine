@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"timeline/config"
@@ -9,11 +10,12 @@ import (
 )
 
 func main() {
-	// appconfig := config.Configuration.APPConfig
-	db := config.MustGetAPPDB()
+	c := config.MustGetAppConfig()
+	fmt.Println(c)
+	db := config.MustGetDB()
 	db.AutoMigrate(&models.User{})
 	defer db.Close()
 
 	router := server.New(db)
-	log.Fatal(http.ListenAndServe(config.Config.APPConfig.Port, router))
+	log.Fatal(http.ListenAndServe(c.Port, router))
 }
