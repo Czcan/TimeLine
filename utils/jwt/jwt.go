@@ -14,9 +14,11 @@ type JWTValidate interface {
 }
 
 type Token struct {
-	Uid string `json:""uid`
+	Uid string `json:"uid"`
 	jwt.StandardClaims
 }
+
+var _ JWTValidate = (*JWTClient)(nil)
 
 type JWTClient struct {
 	Issuer     string

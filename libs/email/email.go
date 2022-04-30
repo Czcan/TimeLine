@@ -15,10 +15,6 @@ const (
 	text EmailType = 2
 )
 
-type EmailValidate interface {
-	Send(to string, body string, subject string, emailType EmailType) error
-}
-
 type EmailClient struct {
 	addr   string
 	from   string

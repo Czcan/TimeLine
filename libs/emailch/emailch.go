@@ -15,10 +15,6 @@ const (
 	text EmailType = 2
 )
 
-type EmailValidate interface {
-	Send(to string, body string, subject string, emailType EmailType) error
-}
-
 type EmailClient struct {
 	addr   string
 	from   string
@@ -49,7 +45,7 @@ func New(addr, from, name, secret string) (*EmailClient, error) {
 
 func (client *EmailClient) Send(to string, body string, subject string, emailType EmailType) error {
 	e := email.NewEmail()
-	e.From = client.from
+	e.From = client.name + "<" + client.from + ">"
 	e.To = []string{to}
 	e.Subject = subject
 	if emailType == 1 {

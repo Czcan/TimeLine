@@ -11,9 +11,13 @@ import (
 )
 
 type AppConfig struct {
-	DB        string
-	Port      string `default:":8099"`
-	SecretKey string
+	DB          string
+	Port        string `default:":8099"`
+	SecretKey   string
+	EmailUser   string
+	EmailSecret string
+	EmailHost   string
+	EmailName   string
 }
 
 var (
@@ -43,7 +47,7 @@ func MustGetDB() *gorm.DB {
 	if err != nil {
 		panic(err)
 	}
-	// DB.LogMode(true)
+	DB.LogMode(true)
 	return DB
 }
 

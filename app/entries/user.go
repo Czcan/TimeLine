@@ -1,11 +1,10 @@
 package entries
 
-type User struct {
-	Avatar   string `json:"avatar"`
-	NickName string `json:"nick_name"`
-	Uid      string `json:"Uid"`
-	Gender   bool   `json:"gender"`
-	Age      int    `json:"age"`
+type Auth struct {
+	Token    string `json:"token"`
 	Email    string `json:"email"`
-	JwtToken string `json:"jwt_token"`
+	NickName string `json:"nick_name"`
+	Avatar   string `json:"avatar"`
+	Gender   int    `json:"gender"`
+	Age      int    `json:"age"`
 }

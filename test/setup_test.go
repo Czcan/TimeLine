@@ -2,19 +2,26 @@ package test
 
 import (
 	"fmt"
+	"io/ioutil"
 	"net/http/httptest"
+	"net/url"
 	"strings"
 
 	"github.com/Czcan/TimeLine/config"
 	"github.com/Czcan/TimeLine/models"
 	"github.com/Czcan/TimeLine/server"
+	"github.com/ddliu/go-httpclient"
+	"github.com/go-chi/chi"
+	"github.com/gorilla/sessions"
 	"github.com/jinzhu/gorm"
 )
 
 var (
-	DB     *gorm.DB
-	err    error
-	Server *httptest.Server
+	DB           *gorm.DB
+	err          error
+	Server       *httptest.Server
+	Router       *chi.Mux
+	SessionStore *sessions.CookieStore
 )
 
 type Record struct {
@@ -24,7 +31,6 @@ type Record struct {
 func setup() {
 	c := config.MustGetAppConfig()
 
-	var err error
 	DB, err = gorm.Open("mysql", c.DB)
 	if err != nil {
 		panic(err)
@@ -32,16 +38,100 @@ func setup() {
 
 	DB.DropTableIfExists(&models.User{})
 	DB.AutoMigrate(&models.User{})
+	createdData()
 
-	createData()
+	jwtClient := &JWTClientMock{}
+	SessionStore = sessions.NewCookieStore([]byte("TimLine"))
 
-	router := server.New(DB)
-	Server = httptest.NewServer(router)
+	Router = server.New(DB, SessionStore, jwtClient, nil)
+	Server = httptest.NewServer(Router)
 }
 
-func createData() {
+func Get(url string) string {
+	client := httpclient.NewHttpClient()
+	resp, _ := client.Get(Server.URL + url)
+	body, _ := ioutil.ReadAll(resp.Body)
+	return string(body)
+}
+
+func SingeGet(token string, url string, values url.Values) string {
+	client := httpclient.NewHttpClient()
+	client.Headers = make(map[string]string)
+	client.Headers["Authorization"] = token
+	params := make(map[string]string)
+	for index, value := range values {
+		params[index] = value[0]
+	}
+	resp, _ := client.Get(Server.URL+url, params)
+	body, _ := ioutil.ReadAll(resp.Body)
+	return string(body)
+}
+
+func Post(url string, values url.Values) string {
+	client := httpclient.NewHttpClient()
+	params := make(map[string]string)
+	for index, value := range values {
+		params[index] = value[0]
+	}
+	resp, _ := client.Post(Server.URL+url, params)
+	body, _ := ioutil.ReadAll(resp.Body)
+	return string(body)
+}
+
+func SingePost(token string, url string, values url.Values) string {
+	client := httpclient.NewHttpClient()
+	client.Headers = make(map[string]string)
+	client.Headers["Authorization"] = token
+	params := make(map[string]string)
+	for index, value := range values {
+		params[index] = value[0]
+	}
+	resp, _ := client.Post(Server.URL+url, params)
+	body, _ := ioutil.ReadAll(resp.Body)
+	return string(body)
+}
+
+func SingePutJson(token string, url string, values url.Values) string {
+	client := httpclient.NewHttpClient()
+	client.Headers = make(map[string]string)
+	client.Headers["Authorization"] = token
+	params := make(map[string]string)
+	for index, value := range values {
+		params[index] = value[0]
+	}
+	resp, _ := client.PutJson(Server.URL+url, params)
+	body, _ := ioutil.ReadAll(resp.Body)
+	return string(body)
+}
+
+func SingePut(token string, url string, values url.Values) string {
+	client := httpclient.NewHttpClient()
+	client.Headers = make(map[string]string)
+	client.Headers["Content-Type"] = "application/x-www-form-urlencoded"
+	client.Headers["Authorization"] = token
+	params := strings.NewReader(values.Encode())
+	resp, _ := client.Put(Server.URL+url, params)
+	body, _ := ioutil.ReadAll(resp.Body)
+	return string(body)
+}
+
+func SingeDelete(token string, url string, values url.Values) string {
+	client := httpclient.NewHttpClient()
+	client.Headers = make(map[string]string)
+	client.Headers["Authorization"] = token
+	params := make(map[string]string)
+	for index, value := range values {
+		params[index] = value[0]
+	}
+	resp, _ := client.Delete(Server.URL+url, params)
+	body, _ := ioutil.ReadAll(resp.Body)
+	return string(body)
+}
+
+func createdData() {
 	RunSQL(DB, `
-		INSERT INTO users (id, uid, email) VALUES (1, 369, '1048196021@qq.com');
+		INSERT INTO users (id, email, password, nick_name) VALUES (1, 'test1@qq.com', '123456', "123123");
+		INSERT INTO users (id, email, password) VALUES (2, 'test2@qq.com', '123456');
 	`)
 }
 

@@ -4,4 +4,12 @@ port:
   :8099
 secretkey: 
   "123123"
+emailuser:
+  "1479039156@qq.com"
+emailsecret:
+  "dtoeddyfqbjsghgg"
+emailhost:
+  "smtp.qq.com:25"
+emailname:
+  "TimeLine"
   
