@@ -6,22 +6,23 @@ import (
 	"net/http/httptest"
 	"net/url"
 	"strings"
+	"time"
 
 	"github.com/Czcan/TimeLine/config"
 	"github.com/Czcan/TimeLine/models"
 	"github.com/Czcan/TimeLine/server"
 	"github.com/ddliu/go-httpclient"
 	"github.com/go-chi/chi"
-	"github.com/gorilla/sessions"
 	"github.com/jinzhu/gorm"
+	"github.com/patrickmn/go-cache"
 )
 
 var (
-	DB           *gorm.DB
-	err          error
-	Server       *httptest.Server
-	Router       *chi.Mux
-	SessionStore *sessions.CookieStore
+	DB     *gorm.DB
+	err    error
+	Server *httptest.Server
+	Router *chi.Mux
+	Cache  *cache.Cache
 )
 
 type Record struct {
@@ -41,9 +42,9 @@ func setup() {
 	createdData()
 
 	jwtClient := &JWTClientMock{}
-	SessionStore = sessions.NewCookieStore([]byte("TimLine"))
+	Cache = cache.New(time.Minute*3, time.Minute*5)
 
-	Router = server.New(DB, SessionStore, jwtClient, nil)
+	Router = server.New(DB, Cache, jwtClient, nil)
 	Server = httptest.NewServer(Router)
 }
 

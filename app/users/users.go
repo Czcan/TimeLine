@@ -2,28 +2,26 @@ package users
 
 import (
 	"net/http"
-	"time"
 
 	"github.com/Czcan/TimeLine/app/entries"
 	"github.com/Czcan/TimeLine/app/helpers"
-	"github.com/Czcan/TimeLine/app/verify"
 	"github.com/Czcan/TimeLine/models"
 	"github.com/Czcan/TimeLine/utils/jwt"
-	"github.com/gorilla/sessions"
 	"github.com/jinzhu/gorm"
+	"github.com/patrickmn/go-cache"
 )
 
 type Handler struct {
-	DB           *gorm.DB
-	JwtClient    jwt.JWTValidate
-	SessionStore *sessions.CookieStore
+	DB        *gorm.DB
+	JwtClient jwt.JWTValidate
+	Cache     *cache.Cache
 }
 
-func New(db *gorm.DB, jwtClient jwt.JWTValidate, sessionStore *sessions.CookieStore) Handler {
+func New(db *gorm.DB, jwtClient jwt.JWTValidate, cache *cache.Cache) Handler {
 	return Handler{
-		DB:           db,
-		JwtClient:    jwtClient,
-		SessionStore: sessionStore,
+		DB:        db,
+		JwtClient: jwtClient,
+		Cache:     cache,
 	}
 }
 
@@ -62,28 +60,25 @@ func (h Handler) Register(w http.ResponseWriter, r *http.Request) {
 		helpers.RenderFailureJSON(w, 400, "email or password is empty")
 		return
 	}
-	sessions, err := h.SessionStore.Get(r, "timeLine")
-	if err != nil {
-		helpers.RenderFailureJSON(w, 500, "注册失败")
+	val, ok := h.Cache.Get(email)
+	if !ok {
+		helpers.RenderFailureJSON(w, 500, "验证码过期")
 		return
 	}
-	captcha, ok := sessions.Values[email].(verify.Captcha)
+	captcha, ok := val.(string)
 	if !ok {
 		helpers.RenderFailureJSON(w, 500, "注册失败")
 		return
 	}
-	if !time.Now().Before(captcha.ExpiresAt) {
-		helpers.RenderFailureJSON(w, 400, "验证码过期")
-		return
-	}
-	if captcha.Code != code {
+	if captcha != code {
 		helpers.RenderFailureJSON(w, 400, "验证码错误")
 		return
 	}
-	_, err = models.FindOrCreateUser(h.DB, email, pwd)
+	_, err := models.FindOrCreateUser(h.DB, email, pwd)
 	if err != nil {
-		helpers.RenderFailureJSON(w, 400, err.Error())
+		helpers.RenderFailureJSON(w, 400, "用户已存在")
 		return
 	}
+	defer h.Cache.Delete(email)
 	helpers.RenderSuccessJSON(w, 200, "注册成功")
 }

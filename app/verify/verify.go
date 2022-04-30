@@ -8,23 +8,18 @@ import (
 	"github.com/Czcan/TimeLine/app/helpers"
 	email "github.com/Czcan/TimeLine/libs/emailch"
 	"github.com/Czcan/TimeLine/utils"
-	"github.com/gorilla/sessions"
+	"github.com/patrickmn/go-cache"
 )
 
-type Captcha struct {
-	Code      string
-	ExpiresAt time.Time
-}
-
 type Handler struct {
-	SessionStore *sessions.CookieStore
-	EmailClient  *email.EmailClient
+	Cache       *cache.Cache
+	EmailClient *email.EmailClient
 }
 
-func New(client *email.EmailClient, sessionStore *sessions.CookieStore) Handler {
+func New(client *email.EmailClient, c *cache.Cache) Handler {
 	return Handler{
-		EmailClient:  client,
-		SessionStore: sessionStore,
+		EmailClient: client,
+		Cache:       c,
 	}
 }
 
@@ -44,13 +39,6 @@ func (h Handler) Emailcaptcha(w http.ResponseWriter, r *http.Request) {
 		helpers.RenderFailureJSON(w, 500, "验证码发送失败")
 		return
 	}
-	captcha := Captcha{Code: code, ExpiresAt: time.Now().Add(time.Minute * 3)}
-	session, err := h.SessionStore.Get(r, "timeLine")
-	if err != nil {
-		helpers.RenderFailureJSON(w, 500, "验证码发送失败")
-		return
-	}
-	session.Values[email] = captcha
-	session.Save(r, w)
+	h.Cache.Set(email, code, time.Minute*3)
 	helpers.RenderSuccessJSON(w, 200, "发送成功")
 }

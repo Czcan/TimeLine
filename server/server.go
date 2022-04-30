@@ -10,19 +10,19 @@ import (
 	"github.com/Czcan/TimeLine/utils/jwt"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
-	"github.com/gorilla/sessions"
 	"github.com/jinzhu/gorm"
+	"github.com/patrickmn/go-cache"
 )
 
-func New(db *gorm.DB, sessionStore *sessions.CookieStore, jwtClient jwt.JWTValidate, emailClient *email.EmailClient) *chi.Mux {
+func New(db *gorm.DB, cache *cache.Cache, jwtClient jwt.JWTValidate, emailClient *email.EmailClient) *chi.Mux {
 	r := chi.NewRouter()
 
 	r.Use(middleware.Recoverer)
 	r.Use(middleware.URLFormat)
 	r.Use(middlewares.JwtAuthentication(jwtClient))
 
-	userHandler := users.New(db, jwtClient, sessionStore)
-	captchaHandler := verify.New(emailClient, sessionStore)
+	userHandler := users.New(db, jwtClient, cache)
+	captchaHandler := verify.New(emailClient, cache)
 
 	r.Post("/api/auth", userHandler.Auth)
 	r.Post("/api/register", userHandler.Register)
