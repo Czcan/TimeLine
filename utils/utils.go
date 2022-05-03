@@ -2,7 +2,7 @@ package utils
 
 import (
 	"crypto/sha256"
-	"encoding/base64"
+	"encoding/hex"
 	"math/rand"
 	"regexp"
 	"time"
@@ -15,7 +15,7 @@ const (
 func GenerateToken(email string) string {
 	h := sha256.New()
 	h.Write([]byte(email))
-	token := base64.StdEncoding.EncodeToString(h.Sum(nil))
+	token := hex.EncodeToString(h.Sum(nil))
 	return token
 }
 
