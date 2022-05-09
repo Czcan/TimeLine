@@ -36,9 +36,9 @@ func (h Handler) Emailcaptcha(w http.ResponseWriter, r *http.Request) {
 	`, "$", code, -1)
 	err := h.EmailClient.Send(email, body, "[TimeLine]时间轴手账验证码", 1)
 	if err != nil {
-		helpers.RenderFailureJSON(w, 500, "验证码发送失败")
+		helpers.RenderFailureJSON(w, 500, err.Error())
 		return
 	}
 	h.Cache.Set(email, code, time.Minute*3)
-	helpers.RenderSuccessJSON(w, 200, "发送成功")
+	helpers.RenderSuccessJSON(w, 200, body)
 }

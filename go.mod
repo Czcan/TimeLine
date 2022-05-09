@@ -7,19 +7,20 @@ require (
 	github.com/fatih/color v1.13.0
 	github.com/go-chi/chi v1.5.4
 	github.com/golang-jwt/jwt v3.2.2+incompatible
-	github.com/gorilla/sessions v1.2.1
+	github.com/iancoleman/strcase v0.2.0
 	github.com/jinzhu/configor v1.2.1
 	github.com/jinzhu/gorm v1.9.16
-	github.com/jordan-wright/email v4.0.1-0.20210109023952-943e75fe5223+incompatible
 	github.com/patrickmn/go-cache v2.1.0+incompatible
+	github.com/rs/xid v1.4.0
+	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.7.1
+	github.com/tomasen/realip v0.0.0-20180522021738-f0c99a92ddce
 )
 
 require (
 	github.com/BurntSushi/toml v0.3.1 // indirect
-	github.com/davecgh/go-spew v1.1.0 // indirect
+	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/go-sql-driver/mysql v1.5.0 // indirect
-	github.com/gorilla/securecookie v1.1.1 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/mattn/go-colorable v0.1.9 // indirect
 	github.com/mattn/go-isatty v0.0.14 // indirect

@@ -1,15 +1,15 @@
 package models
 
+import "time"
+
 type Account struct {
-	ID         int
-	UserID     int
-	NotePadsID int
-	Title      string
-	Content    string `gorm:"type:text;size:65532"`
-	IsPrivate  bool
-	Images     string
-	Favorite   int
-	BgRgb      string
-	TextSize   int
-	TextRgb    string
+	ID        int
+	UserID    int
+	Images    string
+	Title     string
+	Content   string
+	Likers    int
+	Follwers  int
+	CreatedAt time.Time
+	UpdatedAt time.Time
 }

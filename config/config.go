@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"sync"
@@ -26,18 +27,19 @@ var (
 )
 
 func MustGetAppConfig() AppConfig {
-	root := inferRootDir()
+	// root := inferRootDir()
 	if _AppConfig == nil {
 		once.Do(
 			func() {
 				appConfig := &AppConfig{}
-				err := configor.Load(appConfig, root+"/config.yml")
+				err := configor.Load(appConfig, "./config.yml")
 				if err != nil {
 					panic(err)
 				}
 				_AppConfig = appConfig
 			})
 	}
+	fmt.Println(*_AppConfig)
 	return *_AppConfig
 }
 
@@ -47,6 +49,9 @@ func MustGetDB() *gorm.DB {
 	if err != nil {
 		panic(err)
 	}
+	fmt.Println("Success to connect!")
+	fmt.Println("DB:", c.DB)
+	fmt.Println("HOST Port:", c.Port)
 	DB.LogMode(true)
 	return DB
 }

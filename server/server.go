@@ -2,12 +2,14 @@ package server
 
 import (
 	"net/http"
+	"time"
 
+	"github.com/Czcan/TimeLine/app/notes"
 	"github.com/Czcan/TimeLine/app/users"
-	"github.com/Czcan/TimeLine/app/verify"
 	email "github.com/Czcan/TimeLine/libs/emailch"
 	middlewares "github.com/Czcan/TimeLine/middleware"
 	"github.com/Czcan/TimeLine/utils/jwt"
+	"github.com/Czcan/TimeLine/utils/logger"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
 	"github.com/jinzhu/gorm"
@@ -20,19 +22,26 @@ func New(db *gorm.DB, cache *cache.Cache, jwtClient jwt.JWTValidate, emailClient
 	r.Use(middleware.Recoverer)
 	r.Use(middleware.URLFormat)
 	r.Use(middlewares.JwtAuthentication(jwtClient))
-
+	r.Use(logger.Logger(logger.Option{
+		ServiceName: "TimeLine",
+		FormattedTime: func(t time.Time) string {
+			return t.In(time.FixedZone("local", 8*60*60)).Format("2006-01-02 15:04:05")
+		},
+	}))
 	userHandler := users.New(db, jwtClient, cache)
-	captchaHandler := verify.New(emailClient, cache)
-
+	noteHandler := notes.New(db)
+	
 	r.Post("/api/auth", userHandler.Auth)
 	r.Post("/api/register", userHandler.Register)
-	r.Get("/api/email", captchaHandler.Emailcaptcha)
 
-	r.Get("/api", func(w http.ResponseWriter, r *http.Request) {
-		claim, ok := r.Context().Value("token").(*jwt.Token)
-		if ok {
-			w.Write([]byte(claim.Uid))
-		}
+	r.Get("/api/note/list", noteHandler.NoteList)
+	r.Post("/api/note/create", noteHandler.CreateNote)
+	r.Post("/api/note/update", noteHandler.FinishNote)
+	r.Get("/api/folder/list", noteHandler.FolderList)
+	r.Post("/api/folder/create", noteHandler.CreateFolder)
+
+	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte("hello world"))
 	})
 
 	return r

@@ -1,11 +1,9 @@
 package email
 
 import (
+	"fmt"
 	"net/smtp"
 	"strings"
-	"time"
-
-	"github.com/jordan-wright/email"
 )
 
 type EmailType int
@@ -20,7 +18,6 @@ type EmailClient struct {
 	from   string
 	name   string
 	secret string
-	p      *email.Pool
 }
 
 func New(addr, from, name, secret string) (*EmailClient, error) {
@@ -30,28 +27,30 @@ func New(addr, from, name, secret string) (*EmailClient, error) {
 		name:   name,
 		secret: secret,
 	}
-	var err error
-	h := strings.Split(addr, ":")
-	e.p, err = email.NewPool(
-		addr,
-		5,
-		smtp.PlainAuth("", from, secret, h[0]),
-	)
-	if err != nil {
-		return nil, err
-	}
 	return e, nil
 }
 
 func (client *EmailClient) Send(to string, body string, subject string, emailType EmailType) error {
-	e := email.NewEmail()
-	e.From = client.name + "<" + client.from + ">"
-	e.To = []string{to}
-	e.Subject = subject
+	hp := strings.Split(client.addr, ":")
+	auth := smtp.PlainAuth("", client.from, client.secret, hp[0])
+	header := make(map[string]string)
+	header["From"] = client.name + "<" + client.from + ">"
+	header["To"] = to
+	header["Subject"] = subject
 	if emailType == 1 {
-		e.Text = []byte(body)
+		header["Content-Type"] = "text/html; charset=UTF-8"
 	} else if emailType == 2 {
-		e.HTML = []byte(body)
+		header["Content-Type"] = "text/plain; charset=UTF-8"
 	}
-	return client.p.Send(e, time.Second*10)
+	sendTo := strings.Split(to, ";")
+	message := ""
+	for k, v := range header {
+		message += fmt.Sprintf("%s:%s\r\n", k, v)
+	}
+	message += "\r\n" + body
+	err := smtp.SendMail(client.addr, auth, client.from, sendTo, []byte(message))
+	if err != nil {
+		return err
+	}
+	return nil
 }
