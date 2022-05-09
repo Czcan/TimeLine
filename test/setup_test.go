@@ -37,14 +37,14 @@ func setup() {
 		panic(err)
 	}
 
-	DB.DropTableIfExists(&models.User{})
-	DB.AutoMigrate(&models.User{})
+	DB.DropTableIfExists(&models.User{}, &models.Folder{}, &models.Note{})
+	DB.AutoMigrate(&models.User{}, &models.Folder{}, &models.Note{})
 	createdData()
 
 	jwtClient := &JWTClientMock{}
 	Cache = cache.New(time.Minute*3, time.Minute*5)
 
-	Router = server.New(DB, Cache, jwtClient, nil)
+	Router = server.New(DB, jwtClient)
 	Server = httptest.NewServer(Router)
 }
 
@@ -131,7 +131,7 @@ func SingeDelete(token string, url string, values url.Values) string {
 
 func createdData() {
 	RunSQL(DB, `
-		INSERT INTO users (id, email, password, nick_name) VALUES (1, 'test1@qq.com', '123456', "123123");
+		INSERT INTO users (id, email, uid, password, nick_name) VALUES (1, 'test1@qq.com', '123123','123456','name');
 		INSERT INTO users (id, email, password) VALUES (2, 'test2@qq.com', '123456');
 	`)
 }

@@ -20,7 +20,7 @@ func TestUserAuth(t *testing.T) {
 	setup()
 
 	testCases := []UserAuthTestCase{
-		{Email: "test1@qq.com", Password: "123456", ExpectedUser: `{"code":200,"data":{"token":"123123","email":"test1@qq.com","nick_name":"123123","avatar":"","gender":0,"age":0}}`},
+		{Email: "test1@qq.com", Password: "123456", ExpectedUser: `{"code":200,"data":{"token":"123123","email":"test1@qq.com","nick_name":"name","avatar":"","gender":0,"age":0},"message":null}`},
 		{Email: "", Password: "123456", ExpectedError: "email or password is empty"},
 		{Email: "test2@qq.com", Password: "123123", ExpectedError: "email or password is error"},
 	}
@@ -43,9 +43,7 @@ func TestUserAuth(t *testing.T) {
 type UserRegisterTestCase struct {
 	Email            string
 	Password         string
-	Code             string
-	Captcha          string
-	ExpiresAt        time.Duration
+	PasswordAgain    string
 	ExpectedResponse string
 	ExpectedError    string
 }
@@ -53,21 +51,17 @@ type UserRegisterTestCase struct {
 func TestUserRegister(t *testing.T) {
 	setup()
 	testCases := []UserRegisterTestCase{
-		{Email: "test1@qq.com", Password: "123456", Code: "123456", Captcha: "123456", ExpiresAt: 0, ExpectedError: "用户已存在"},
-		{Email: "test3@qq.com", Password: "123456", Code: "123456", Captcha: "123123", ExpiresAt: 0, ExpectedError: "验证码错误"},
-		{Email: "test4@qq.com", Password: "123456", Code: "123456", Captcha: "123456", ExpiresAt: time.Millisecond * 1, ExpectedError: "验证码过期"},
-		{Email: "test5@qq.com", Password: "123456", Code: "123456", Captcha: "123456", ExpiresAt: 0, ExpectedResponse: "注册成功"},
-		{Email: "", Password: "123456", Code: "123456", Captcha: "123456", ExpiresAt: 0, ExpectedError: "email or password is empty"},
-	}
-	for _, testCase := range testCases {
-		setCode(testCase.Email, testCase.Captcha, testCase.ExpiresAt)
+		{Email: "test1@qq.com", Password: "123456", PasswordAgain: "123456", ExpectedError: "用户已存在"},
+		{Email: "test3@qq.com", Password: "123456", PasswordAgain: "123123", ExpectedError: "incorrect password"},
+		{Email: "test5@qq.com", Password: "123456", PasswordAgain: "123456", ExpectedResponse: "注册成功"},
+		{Email: "", Password: "123456", ExpectedError: "email is empty"},
 	}
 	time.Sleep(time.Second * 1)
 	for i, testCase := range testCases {
 		body := Post("/api/register", url.Values{
-			"email":    {testCase.Email},
-			"password": {testCase.Password},
-			"code":     {testCase.Code},
+			"email":     {testCase.Email},
+			"password":  {testCase.Password},
+			"password1": {testCase.PasswordAgain},
 		})
 		if testCase.ExpectedError != "" && !strings.Contains(body, testCase.ExpectedError) {
 			t.Errorf(color.RedString("TestUserRegister #%v: Expected error %v but got %v", i+1, testCase.ExpectedError, body))
@@ -77,8 +71,4 @@ func TestUserRegister(t *testing.T) {
 		}
 		color.Green("TestUserRegister #%v: Success", i+1)
 	}
-}
-
-func setCode(email, code string, dur time.Duration) {
-	Cache.Set(email, code, dur)
 }
