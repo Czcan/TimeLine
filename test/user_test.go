@@ -20,7 +20,7 @@ func TestUserAuth(t *testing.T) {
 	setup()
 
 	testCases := []UserAuthTestCase{
-		{Email: "test1@qq.com", Password: "123456", ExpectedUser: `{"code":200,"data":{"token":"123123","email":"test1@qq.com","nick_name":"name","avatar":"","gender":0,"age":0},"message":null}`},
+		{Email: "test1@qq.com", Password: "123456", ExpectedUser: `{"code":200,"data":{"token":"123123","email":"test1@qq.com","nick_name":"name","avatar":"","gender":0,"age":0,"signature":""},"message":null}`},
 		{Email: "", Password: "123456", ExpectedError: "email or password is empty"},
 		{Email: "test2@qq.com", Password: "123123", ExpectedError: "email or password is error"},
 	}
@@ -70,5 +70,36 @@ func TestUserRegister(t *testing.T) {
 			t.Errorf(color.RedString("TestUserRegister #%v: Expected resp %v but got %v", i+1, testCase.ExpectedResponse, body))
 		}
 		color.Green("TestUserRegister #%v: Success", i+1)
+	}
+}
+
+type UpdateUserTestCase struct {
+	Token         string
+	Key           string
+	Value         string
+	ExpectedError string
+	ExpectedUser  string
+}
+
+func TestUpdateUser(t *testing.T) {
+	setup()
+	testCases := []UpdateUserTestCase{
+		{Token: "123123", Key: "nick_name", Value: "nick_name", ExpectedUser: `{"code":200,"data":{"token":"123123","email":"test1@qq.com","nick_name":"nick_name","avatar":"","gender":0,"age":0,"signature":""},"message":null}`},
+		{Token: "123456", ExpectedError: "invalid user"},
+		{Token: "123123", Key: "", Value: "invalid params", ExpectedError: "invalid params"},
+		{Token: "123123", Key: "Age", Value: "18", ExpectedUser: `{"code":200,"data":{"token":"123123","email":"test1@qq.com","nick_name":"nick_name","avatar":"","gender":0,"age":18,"signature":""},"message":null}`},
+	}
+	for i, testCase := range testCases {
+		body := SingePost(testCase.Token, "/api/user/update", url.Values{
+			"key":   {testCase.Key},
+			"value": {testCase.Value},
+		})
+		if testCase.ExpectedError != "" && !strings.Contains(body, testCase.ExpectedError) {
+			t.Errorf(color.RedString("TestUpdateUser #%v: expected error %v but got %v", i+1, testCase.ExpectedError, body))
+		}
+		if testCase.ExpectedUser != "" && body != testCase.ExpectedUser {
+			t.Errorf(color.RedString("TestUpdateUser #%v: expected user %v but got %v", i+1, testCase.ExpectedUser, body))
+		}
+		color.Green("TestUpdateUser #%v: success", i+1)
 	}
 }
