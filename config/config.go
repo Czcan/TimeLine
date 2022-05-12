@@ -13,12 +13,13 @@ import (
 
 type AppConfig struct {
 	DB          string
-	Port        string `default:":8099"`
+	Port        string `default:":9091"`
 	SecretKey   string
 	EmailUser   string
 	EmailSecret string
 	EmailHost   string
 	EmailName   string
+	AvatarPath  string
 }
 
 var (
@@ -27,19 +28,18 @@ var (
 )
 
 func MustGetAppConfig() AppConfig {
-	// root := inferRootDir()
+	root := inferRootDir()
 	if _AppConfig == nil {
 		once.Do(
 			func() {
 				appConfig := &AppConfig{}
-				err := configor.Load(appConfig, "./config.yml")
+				err := configor.Load(appConfig, root+"/config.yml")
 				if err != nil {
 					panic(err)
 				}
 				_AppConfig = appConfig
 			})
 	}
-	fmt.Println(*_AppConfig)
 	return *_AppConfig
 }
 

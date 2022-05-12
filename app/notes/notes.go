@@ -33,7 +33,8 @@ func (h Handler) CreateNote(w http.ResponseWriter, r *http.Request) {
 		helpers.RenderFailureJSON(w, 400, err.Error())
 		return
 	}
-	helpers.RenderSuccessJSON(w, 200, "create success")
+	notes := models.GetNoteList(h.DB, folderID, user.ID)
+	helpers.RenderSuccessJSON(w, 200, notes)
 }
 
 func (h Handler) NoteList(w http.ResponseWriter, r *http.Request) {
@@ -47,8 +48,7 @@ func (h Handler) NoteList(w http.ResponseWriter, r *http.Request) {
 		helpers.RenderFailureJSON(w, 400, "invalid params")
 		return
 	}
-	notes := []models.Note{}
-	h.DB.Where("folder_id = ? AND user_id = ?", folderID, user.ID).Find(&notes)
+	notes := models.GetNoteList(h.DB, user.ID, folderID)
 	helpers.RenderSuccessJSON(w, 200, notes)
 }
 
@@ -63,20 +63,9 @@ func (h Handler) FinishNote(w http.ResponseWriter, r *http.Request) {
 		helpers.RenderFailureJSON(w, 400, "invalid params")
 		return
 	}
-	finish := helpers.GetParamsBool(r, "finish")
-	h.DB.Where("id = ? AND user_id = ?", noteID, user.ID).Update("is_finished", finish)
+	status := helpers.GetParamsBool(r, "status")
+	h.DB.Model(&models.Note{}).Where("id = ? AND user_id = ?", noteID, user.ID).Update("status", status)
 	helpers.RenderSuccessJSON(w, 200, "updated successed")
-}
-
-func (h Handler) FolderList(w http.ResponseWriter, r *http.Request) {
-	user, err := helpers.GetCurrentUser(r, h.DB)
-	if err != nil {
-		helpers.RenderFailureJSON(w, 400, "invalid user")
-		return
-	}
-	folders := []models.NoteFolder{}
-	h.DB.Where("user_id = ?", user.ID).Find(&folders)
-	helpers.RenderSuccessJSON(w, 200, folders)
 }
 
 func (h Handler) CreateFolder(w http.ResponseWriter, r *http.Request) {
@@ -90,10 +79,21 @@ func (h Handler) CreateFolder(w http.ResponseWriter, r *http.Request) {
 		helpers.RenderFailureJSON(w, 400, "invalid params")
 		return
 	}
-	folder := &models.NoteFolder{Name: name, UserID: user.ID}
+	folder := &models.Folder{Name: name, UserID: user.ID}
 	if err := h.DB.Save(&folder).Error; err != nil {
 		helpers.RenderFailureJSON(w, 400, err.Error())
 		return
 	}
-	helpers.RenderSuccessJSON(w, 200, "create success")
+	folders := models.GetFolderList(h.DB, user.ID)
+	helpers.RenderSuccessJSON(w, 200, folders)
+}
+
+func (h Handler) FolderList(w http.ResponseWriter, r *http.Request) {
+	user, err := helpers.GetCurrentUser(r, h.DB)
+	if err != nil {
+		helpers.RenderFailureJSON(w, 400, "invalid user")
+		return
+	}
+	folders := models.GetFolderList(h.DB, user.ID)
+	helpers.RenderSuccessJSON(w, 200, folders)
 }

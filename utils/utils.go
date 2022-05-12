@@ -4,6 +4,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"math/rand"
+	"os"
 	"regexp"
 	"time"
 )
@@ -41,4 +42,9 @@ func GenerateNumber(length int, source string) string {
 		randNum = append(randNum, bytes[r.Intn(len(bytes))])
 	}
 	return string(randNum)
+}
+
+func Exists(filename string) bool {
+	_, err := os.Stat(filename)
+	return err == nil || os.IsExist(err)
 }

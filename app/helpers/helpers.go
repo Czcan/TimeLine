@@ -9,26 +9,25 @@ import (
 
 	"github.com/Czcan/TimeLine/app/entries"
 	"github.com/Czcan/TimeLine/models"
-	"github.com/Czcan/TimeLine/utils/jwt"
+	"github.com/Czcan/TimeLine/utils/jsonwt"
 	"github.com/iancoleman/strcase"
 	"github.com/jinzhu/gorm"
 )
 
 func GetCurrentUser(r *http.Request, db *gorm.DB) (*models.User, error) {
-	claim, ok := r.Context().Value("token").(*jwt.Token)
+	claim, ok := r.Context().Value("token").(*jsonwt.Token)
 	if !ok {
 		return nil, errors.New("invalid token")
 	}
 	user := &models.User{}
 	if err := db.Where("Uid = ?", claim.Uid).First(user).Error; err != nil {
-		return nil, errors.New("请先登录程序")
+		return nil, errors.New("invalid user")
 	}
-
 	return user, nil
 }
 
 func RenderSuccessJSON(w http.ResponseWriter, code int, data interface{}) {
-	result, _ := json.Marshal(entries.Success{
+	result, _ := json.Marshal(entries.Response{
 		Code: code,
 		Data: data,
 	})
@@ -38,7 +37,7 @@ func RenderSuccessJSON(w http.ResponseWriter, code int, data interface{}) {
 }
 
 func RenderFailureJSON(w http.ResponseWriter, code int, message interface{}) {
-	result, _ := json.Marshal(entries.Error{
+	result, _ := json.Marshal(entries.Response{
 		Code:    code,
 		Message: message,
 	})

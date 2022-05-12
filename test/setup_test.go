@@ -44,7 +44,7 @@ func setup() {
 	jwtClient := &JWTClientMock{}
 	Cache = cache.New(time.Minute*3, time.Minute*5)
 
-	Router = server.New(DB, jwtClient)
+	Router = server.New(DB, jwtClient, c)
 	Server = httptest.NewServer(Router)
 }
 

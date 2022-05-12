@@ -1,27 +1,27 @@
 package users
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/Czcan/TimeLine/app/entries"
 	"github.com/Czcan/TimeLine/app/helpers"
 	"github.com/Czcan/TimeLine/models"
-	"github.com/Czcan/TimeLine/utils/jwt"
+	"github.com/Czcan/TimeLine/utils/jsonwt"
 	"github.com/jinzhu/gorm"
-	"github.com/patrickmn/go-cache"
 )
 
 type Handler struct {
-	DB        *gorm.DB
-	JwtClient jwt.JWTValidate
-	Cache     *cache.Cache
+	DB         *gorm.DB
+	JwtClient  jsonwt.JWTValidate
+	UploadPath string
 }
 
-func New(db *gorm.DB, jwtClient jwt.JWTValidate, cache *cache.Cache) Handler {
+func New(db *gorm.DB, jwtClient jsonwt.JWTValidate, path string) Handler {
 	return Handler{
-		DB:        db,
-		JwtClient: jwtClient,
-		Cache:     cache,
+		DB:         db,
+		JwtClient:  jwtClient,
+		UploadPath: path,
 	}
 }
 
@@ -43,42 +43,59 @@ func (h Handler) Auth(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	helpers.RenderSuccessJSON(w, 200, entries.Auth{
-		Token:    token,
-		Email:    user.Email,
-		NickName: user.NickName,
-		Gender:   user.Gender,
-		Avatar:   user.Avatar,
-		Age:      user.Age,
+		Token:     token,
+		Email:     user.Email,
+		NickName:  user.NickName,
+		Gender:    user.Gender,
+		Avatar:    user.Avatar,
+		Age:       user.Age,
+		Signature: user.Signature,
 	})
 }
 
 func (h Handler) Register(w http.ResponseWriter, r *http.Request) {
 	email := r.FormValue("email")
-	pwd := r.FormValue("password")
-	code := r.FormValue("code")
-	if email == "" || pwd == "" {
-		helpers.RenderFailureJSON(w, 400, "email or password is empty")
+	password := r.FormValue("password")
+	password1 := r.FormValue("password1")
+	if email == "" {
+		helpers.RenderFailureJSON(w, 400, "email is empty")
 		return
 	}
-	val, ok := h.Cache.Get(email)
-	if !ok {
-		helpers.RenderFailureJSON(w, 500, "验证码过期")
+	if password != password1 {
+		helpers.RenderFailureJSON(w, 400, "incorrect password")
 		return
 	}
-	captcha, ok := val.(string)
-	if !ok {
-		helpers.RenderFailureJSON(w, 500, "注册失败")
-		return
-	}
-	if captcha != code {
-		helpers.RenderFailureJSON(w, 400, "验证码错误")
-		return
-	}
-	_, err := models.FindOrCreateUser(h.DB, email, pwd)
+	_, err := models.FindOrCreateUser(h.DB, email, password)
 	if err != nil {
 		helpers.RenderFailureJSON(w, 400, "用户已存在")
 		return
 	}
-	defer h.Cache.Delete(email)
 	helpers.RenderSuccessJSON(w, 200, "注册成功")
+}
+
+func (h Handler) UpdateUser(w http.ResponseWriter, r *http.Request) {
+	user, err := helpers.GetCurrentUser(r, h.DB)
+	if err != nil {
+		helpers.RenderFailureJSON(w, 400, "invalid user")
+		return
+	}
+	key := r.FormValue("key")
+	value := r.FormValue("value")
+	if key == "" || value == "" {
+		helpers.RenderFailureJSON(w, 400, "invalid params")
+		return
+	}
+	updateSQL := fmt.Sprintf("UPDATE users SET %v = ? WHERE id = ?", key)
+	h.DB.Exec(updateSQL, value, user.ID)
+	u := models.User{}
+	h.DB.Where("id = ?", user.ID).First(&u)
+	helpers.RenderSuccessJSON(w, 200, entries.Auth{
+		Token:     user.Uid,
+		Email:     u.Email,
+		NickName:  u.NickName,
+		Gender:    u.Gender,
+		Avatar:    u.Avatar,
+		Age:       u.Age,
+		Signature: u.Signature,
+	})
 }

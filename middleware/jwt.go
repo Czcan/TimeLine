@@ -5,21 +5,21 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/Czcan/TimeLine/utils/jwt"
+	"github.com/Czcan/TimeLine/utils/jsonwt"
 )
 
-func JwtAuthentication(jwtClient jwt.JWTValidate) func(next http.Handler) http.Handler {
+func JwtAuthentication(jwtClient jsonwt.JWTValidate) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		fn := func(w http.ResponseWriter, r *http.Request) {
 			auth := r.Header.Get("Authorization")
 			if auth != "" {
 				claim, err := jwtClient.ParseToken(auth)
 				if err != nil {
-					http.Error(w, err.Error(), http.StatusUnauthorized)
+					next.ServeHTTP(w, r)
 					return
 				}
 				if time.Now().Unix() > claim.ExpiresAt {
-					http.Error(w, "token is expired", http.StatusUnauthorized)
+					next.ServeHTTP(w, r)
 					return
 				}
 				ctx := context.WithValue(r.Context(), "token", claim)

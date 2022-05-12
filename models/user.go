@@ -14,6 +14,7 @@ type User struct {
 	Email     string `gorm:"unique"`
 	Password  string
 	Uid       string `gorm:"unique"`
+	Signature string
 	Avatar    string
 	NickName  string
 	Gender    int
