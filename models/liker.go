@@ -20,10 +20,10 @@ func UpdateFollwerAndSyncCollection(db *gorm.DB, accountID, userID int, liker bo
 		account    = &Account{}
 		collection = &Collection{}
 	)
+	if err := db.Where("id = ?", accountID).First(&account).Error; err != nil {
+		return 0, err
+	}
 	err := database.Transaction(db, func(tx *gorm.DB) error {
-		if err := tx.Where("id = ?", accountID).First(&account).Error; err != nil {
-			return err
-		}
 		if liker {
 			account.Follwers += 1
 		} else {
