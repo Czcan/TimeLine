@@ -46,6 +46,10 @@ func (h Handler) Follwer(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	follwer := helpers.GetParamsBool(r, "follwer")
-	follwerCount := models.UpdateFollwerAndSyncCollection(h.DB, id, user.ID, follwer)
+	follwerCount, err := models.UpdateFollwerAndSyncCollection(h.DB, id, user.ID, follwer)
+	if err != nil {
+		helpers.RenderFailureJSON(w, 400, err.Error())
+		return
+	}
 	helpers.RenderSuccessJSON(w, 200, follwerCount)
 }
