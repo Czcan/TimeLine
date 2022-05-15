@@ -6,7 +6,6 @@ import (
 	"net/http/httptest"
 	"net/url"
 	"strings"
-	"time"
 
 	"github.com/Czcan/TimeLine/config"
 	"github.com/Czcan/TimeLine/models"
@@ -14,7 +13,6 @@ import (
 	"github.com/ddliu/go-httpclient"
 	"github.com/go-chi/chi"
 	"github.com/jinzhu/gorm"
-	"github.com/patrickmn/go-cache"
 )
 
 var (
@@ -22,7 +20,6 @@ var (
 	err    error
 	Server *httptest.Server
 	Router *chi.Mux
-	Cache  *cache.Cache
 )
 
 type Record struct {
@@ -37,13 +34,12 @@ func setup() {
 		panic(err)
 	}
 
-	DB.DropTableIfExists(&models.User{}, &models.Folder{}, &models.Note{})
-	DB.AutoMigrate(&models.User{}, &models.Folder{}, &models.Note{})
+	DB.DropTableIfExists(&models.User{}, &models.Folder{}, &models.Note{}, &models.Collection{}, &models.Account{}, &models.Comment{})
+	DB.AutoMigrate(&models.User{}, &models.Folder{}, &models.Note{}, &models.Collection{}, &models.Account{}, &models.Comment{})
+	
 	createdData()
 
 	jwtClient := &JWTClientMock{}
-	Cache = cache.New(time.Minute*3, time.Minute*5)
-
 	Router = server.New(DB, jwtClient, c)
 	Server = httptest.NewServer(Router)
 }
