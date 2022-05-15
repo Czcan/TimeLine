@@ -59,8 +59,8 @@ func TestFollwer(t *testing.T) {
 	`)
 	testCases := []FollwerTestCase{
 		{Token: "123456", ExpectedError: `invalid user`},
-		{Token: "123123", ID: "0", ExpectedError: `invalid parmas`},
-		{Token: "123123", ID: "1", Follwer: "1", ExpectedResponse: `dsada`, ExpectedAccount: `dsada`, ExpectedCollection: `sadas`},
+		{Token: "123123", ID: "0", ExpectedError: `invalid params`},
+		{Token: "123123", ID: "1", Follwer: "1", ExpectedResponse: `{"code":200,"data":7,"message":null}`, ExpectedAccount: `1,Account_1,Account_1,1,2,3,5,7`, ExpectedCollection: `1,1,1`},
 	}
 	for i, testCase := range testCases {
 		body := SingeGet(testCase.Token, "/api/follwer", url.Values{
@@ -81,5 +81,6 @@ func TestFollwer(t *testing.T) {
 		if testCase.ExpectedCollection != "" && collection != testCase.ExpectedCollection {
 			t.Errorf("TestFollwer #%v: expected collection %v but got %v", i+1, testCase.ExpectedCollection, collection)
 		}
+		color.Green("TestFollwer #%v: success", i+1)
 	}
 }

@@ -1,18 +1,19 @@
 package server
 
 import (
-	"fmt"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
 	"time"
 
+	"github.com/Czcan/TimeLine/app/accounts"
+	"github.com/Czcan/TimeLine/app/likers"
 	"github.com/Czcan/TimeLine/app/notes"
 	"github.com/Czcan/TimeLine/app/upload"
 	"github.com/Czcan/TimeLine/app/users"
 	"github.com/Czcan/TimeLine/config"
-	middlewares "github.com/Czcan/TimeLine/middleware"
+	"github.com/Czcan/TimeLine/middlewares"
 	"github.com/Czcan/TimeLine/utils/jsonwt"
 	"github.com/Czcan/TimeLine/utils/logger"
 	"github.com/go-chi/chi"
@@ -35,30 +36,49 @@ func New(db *gorm.DB, jwtClient jsonwt.JWTValidate, c config.AppConfig) *chi.Mux
 	userHandler := users.New(db, jwtClient, c.AvatarPath)
 	noteHandler := notes.New(db)
 	uploadHandler := upload.New(db, c.AvatarPath)
+	accountHandler := accounts.New(db)
+	likerHandler := likers.New(db)
 
+	//user
 	r.Post("/api/auth", userHandler.Auth)
 	r.Post("/api/register", userHandler.Register)
 	r.Post("/api/user/update", userHandler.UpdateUser)
+	r.Get("/api/user/collection", userHandler.Collection)
 
+	//account
+	r.Get("/api/account/home", accountHandler.AccountList)
+	r.Post("/api/account/create", accountHandler.CreateAccount)
+	r.Get("/api/account/detail/{id}", accountHandler.AccoutDetail)
+
+	//upload
 	r.Post("/api/upload", uploadHandler.UploadImage)
 
+	//note
 	r.Get("/api/note/list", noteHandler.NoteList)
 	r.Post("/api/note/create", noteHandler.CreateNote)
 	r.Post("/api/note/update", noteHandler.FinishNote)
 	r.Get("/api/folder/list", noteHandler.FolderList)
 	r.Post("/api/folder/create", noteHandler.CreateFolder)
 
+	//liker
+	r.Get("/api/liker", likerHandler.Liker)
+	r.Get("/api/follwer", likerHandler.Follwer)
+
+	//staticFS
+	r.Get("/images/*", StatisFS(c.AvatarPath))
+	r.Get("/accountimg/*", StatisFS(c.AccountImgPath))
+
+	//test
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("hello world"))
 	})
-	workDir, _ := os.Getwd()
-	fmt.Println(workDir)
-	r.Get("/images/*", StatisFS(filepath.Join(workDir, c.AvatarPath)))
 
 	return r
 }
 
-func StatisFS(filepath string) http.HandlerFunc {
+func StatisFS(name string) http.HandlerFunc {
+	workDir, _ := os.Getwd()
+	filepath := filepath.Join(workDir, name)
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := chi.RouteContext(r.Context())
 		path := strings.TrimSuffix(ctx.RoutePattern(), "/*")

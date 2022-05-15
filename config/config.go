@@ -12,14 +12,15 @@ import (
 )
 
 type AppConfig struct {
-	DB          string
-	Port        string `default:":9091"`
-	SecretKey   string
-	EmailUser   string
-	EmailSecret string
-	EmailHost   string
-	EmailName   string
-	AvatarPath  string
+	DB             string
+	Port           string `default:":9091"`
+	SecretKey      string
+	EmailUser      string
+	EmailSecret    string
+	EmailHost      string
+	EmailName      string
+	AvatarPath     string
+	AccountImgPath string
 }
 
 var (

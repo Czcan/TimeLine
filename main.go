@@ -14,7 +14,7 @@ import (
 func main() {
 	c := config.MustGetAppConfig()
 	db := config.MustGetDB()
-	db.AutoMigrate(&models.User{}, &models.Folder{}, &models.Note{})
+	db.AutoMigrate(&models.User{}, &models.Folder{}, &models.Note{}, &models.Collection{}, &models.Account{}, &models.Comment{})
 	defer db.Close()
 
 	jwtClient := jsonwt.New([]byte("123"), time.Hour*2, "TimeLine")

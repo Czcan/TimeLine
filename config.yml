@@ -6,4 +6,5 @@ emailsecret: "dtoeddyfqbjsghgg"
 emailhost: "smtp.qq.com:25"
 emailname: "TimeLine"
 avatarpath: "upload/avatar/images"
+accountimgpath: "upload/accountimg"
   

@@ -23,6 +23,13 @@ type User struct {
 	UpdatedAt time.Time
 }
 
+type Collection struct {
+	ID        int
+	UserID    int
+	AccountID int
+	CreatedAt time.Time
+}
+
 func FindUser(db *gorm.DB, email string, pwd string) (*User, error) {
 	user := &User{}
 	if err := db.Where("email = ? AND password = ?", email, pwd).First(&user).Error; err != nil {
@@ -51,4 +58,8 @@ func FindOrCreateUser(db *gorm.DB, email string, pwd string) (*User, error) {
 		return nil, err
 	}
 	return user, nil
+}
+
+func (u *User) GetAvatarUrl() string {
+	return fmt.Sprintf("/images/%d.jpg", u.ID)
 }

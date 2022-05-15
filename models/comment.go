@@ -2,9 +2,9 @@ package models
 
 import "time"
 
-type Comments struct {
+type Comment struct {
 	ID        int
-	AccoutID  int
+	AccountID int
 	UserID    int
 	Content   string
 	CreatedAt time.Time

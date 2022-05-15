@@ -47,7 +47,7 @@ func (h Handler) Auth(w http.ResponseWriter, r *http.Request) {
 		Email:     user.Email,
 		NickName:  user.NickName,
 		Gender:    user.Gender,
-		Avatar:    user.Avatar,
+		Avatar:    user.GetAvatarUrl(),
 		Age:       user.Age,
 		Signature: user.Signature,
 	})
@@ -98,4 +98,24 @@ func (h Handler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 		Age:       u.Age,
 		Signature: u.Signature,
 	})
+}
+
+func (h Handler) Collection(w http.ResponseWriter, r *http.Request) {
+	user, err := helpers.GetCurrentUser(r, h.DB)
+	if err != nil {
+		helpers.RenderFailureJSON(w, 400, "invalid user")
+		return
+	}
+	selectSQL := `
+		SELECT accounts.id AS id, title, content, accounts.created_at, images, likers, follwers 
+		FROM accounts 
+		LEFT JOIN collections ON accounts.id = collections.account_id 
+		WHERE collections.user_id = ?
+	`
+	collections := []models.Account{}
+	h.DB.Raw(selectSQL, user.ID).Scan(&collections)
+	for i := 0; i < len(collections); i++ {
+		collections[i].ConCatImages()
+	}
+	helpers.RenderSuccessJSON(w, 200, collections)
 }
