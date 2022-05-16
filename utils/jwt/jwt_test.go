@@ -1,4 +1,4 @@
-package jsonwt
+package jwt
 
 import (
 	"strings"

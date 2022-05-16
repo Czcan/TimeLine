@@ -8,7 +8,7 @@ import (
 	"github.com/Czcan/TimeLine/config"
 	"github.com/Czcan/TimeLine/models"
 	"github.com/Czcan/TimeLine/server"
-	"github.com/Czcan/TimeLine/utils/jsonwt"
+	"github.com/Czcan/TimeLine/utils/jwt"
 )
 
 func main() {
@@ -17,7 +17,7 @@ func main() {
 	db.AutoMigrate(&models.User{}, &models.Folder{}, &models.Note{}, &models.Collection{}, &models.Account{}, &models.Comment{})
 	defer db.Close()
 
-	jwtClient := jsonwt.New([]byte("123"), time.Hour*2, "TimeLine")
+	jwtClient := jwt.New([]byte("123"), time.Hour*2, "TimeLine")
 	router := server.New(db, jwtClient, c)
 
 	log.Printf("localhost%s\n", c.Port)

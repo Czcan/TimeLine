@@ -9,13 +9,13 @@ import (
 
 	"github.com/Czcan/TimeLine/app/entries"
 	"github.com/Czcan/TimeLine/models"
-	"github.com/Czcan/TimeLine/utils/jsonwt"
+	"github.com/Czcan/TimeLine/utils/jwt"
 	"github.com/iancoleman/strcase"
 	"github.com/jinzhu/gorm"
 )
 
 func GetCurrentUser(r *http.Request, db *gorm.DB) (*models.User, error) {
-	claim, ok := r.Context().Value("token").(*jsonwt.Token)
+	claim, ok := r.Context().Value("token").(*jwt.Token)
 	if !ok {
 		return nil, errors.New("invalid token")
 	}

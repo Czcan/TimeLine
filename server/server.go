@@ -14,14 +14,14 @@ import (
 	"github.com/Czcan/TimeLine/app/users"
 	"github.com/Czcan/TimeLine/config"
 	"github.com/Czcan/TimeLine/middlewares"
-	"github.com/Czcan/TimeLine/utils/jsonwt"
+	"github.com/Czcan/TimeLine/utils/jwt"
 	"github.com/Czcan/TimeLine/utils/logger"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
 	"github.com/jinzhu/gorm"
 )
 
-func New(db *gorm.DB, jwtClient jsonwt.JWTValidate, c config.AppConfig) *chi.Mux {
+func New(db *gorm.DB, jwtClient jwt.JWTValidate, c config.AppConfig) *chi.Mux {
 	r := chi.NewRouter()
 
 	r.Use(middleware.Recoverer)

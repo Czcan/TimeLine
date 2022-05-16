@@ -4,8 +4,8 @@ import (
 	"errors"
 	"time"
 
-	"github.com/Czcan/TimeLine/utils/jsonwt"
-	"github.com/golang-jwt/jwt"
+	"github.com/Czcan/TimeLine/utils/jwt"
+	jwtPkg "github.com/golang-jwt/jwt"
 )
 
 type JWTClientMock struct{}
@@ -14,13 +14,13 @@ func (client *JWTClientMock) GetToken(Uid string) (string, error) {
 	return "123123", nil
 }
 
-func (client *JWTClientMock) ParseToken(token string) (*jsonwt.Token, error) {
+func (client *JWTClientMock) ParseToken(token string) (*jwt.Token, error) {
 	if token != "123123" {
 		return nil, errors.New("invalid token")
 	}
-	claim := &jsonwt.Token{
+	claim := &jwt.Token{
 		"123123",
-		jwt.StandardClaims{
+		jwtPkg.StandardClaims{
 			ExpiresAt: time.Now().Add(time.Hour * 2).Unix(),
 		},
 	}

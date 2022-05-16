@@ -5,10 +5,10 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/Czcan/TimeLine/utils/jsonwt"
+	"github.com/Czcan/TimeLine/utils/jwt"
 )
 
-func JwtAuthentication(jwtClient jsonwt.JWTValidate) func(next http.Handler) http.Handler {
+func JwtAuthentication(jwtClient jwt.JWTValidate) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		fn := func(w http.ResponseWriter, r *http.Request) {
 			auth := r.Header.Get("Authorization")

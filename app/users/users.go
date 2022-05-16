@@ -7,17 +7,17 @@ import (
 	"github.com/Czcan/TimeLine/app/entries"
 	"github.com/Czcan/TimeLine/app/helpers"
 	"github.com/Czcan/TimeLine/models"
-	"github.com/Czcan/TimeLine/utils/jsonwt"
+	"github.com/Czcan/TimeLine/utils/jwt"
 	"github.com/jinzhu/gorm"
 )
 
 type Handler struct {
 	DB         *gorm.DB
-	JwtClient  jsonwt.JWTValidate
+	JwtClient  jwt.JWTValidate
 	UploadPath string
 }
 
-func New(db *gorm.DB, jwtClient jsonwt.JWTValidate, path string) Handler {
+func New(db *gorm.DB, jwtClient jwt.JWTValidate, path string) Handler {
 	return Handler{
 		DB:         db,
 		JwtClient:  jwtClient,
