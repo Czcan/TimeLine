@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/Czcan/TimeLine/app/accounts"
+	"github.com/Czcan/TimeLine/app/folder"
 	"github.com/Czcan/TimeLine/app/likers"
 	"github.com/Czcan/TimeLine/app/notes"
 	"github.com/Czcan/TimeLine/app/upload"
@@ -38,7 +39,7 @@ func New(db *gorm.DB, jwtClient jwt.JWTValidate, c config.AppConfig) *chi.Mux {
 	uploadHandler := upload.New(db, c.AvatarPath)
 	accountHandler := accounts.New(db)
 	likerHandler := likers.New(db)
-
+	folderHandler := folder.New(db)
 	//user
 	r.Post("/api/auth", userHandler.Auth)
 	r.Post("/api/register", userHandler.Register)
@@ -54,11 +55,15 @@ func New(db *gorm.DB, jwtClient jwt.JWTValidate, c config.AppConfig) *chi.Mux {
 	r.Post("/api/upload", uploadHandler.UploadImage)
 
 	//note
-	r.Get("/api/note/list", noteHandler.NoteList)
-	r.Post("/api/note/create", noteHandler.CreateNote)
-	r.Post("/api/note/update", noteHandler.FinishNote)
-	r.Get("/api/folder/list", noteHandler.FolderList)
-	r.Post("/api/folder/create", noteHandler.CreateFolder)
+	r.Get("/api/note/list", noteHandler.List)
+	r.Post("/api/note/create", noteHandler.Create)
+	r.Post("/api/note/update", noteHandler.Update)
+	r.Delete("/api/note/deleted", noteHandler.Deleted)
+	
+	//folder
+	r.Get("/api/folder/list", folderHandler.List)
+	r.Post("/api/folder/create", folderHandler.Create)
+	r.Delete("/api/folder/deleted", folderHandler.Deleted)
 
 	//liker
 	r.Get("/api/liker", likerHandler.Liker)
