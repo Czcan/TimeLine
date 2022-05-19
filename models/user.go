@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/Czcan/TimeLine/utils"
-	"github.com/jinzhu/gorm"
+	"gorm.io/gorm"
 )
 
 type User struct {

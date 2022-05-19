@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/Czcan/TimeLine/utils/database"
-	"github.com/jinzhu/gorm"
+	"gorm.io/gorm"
 )
 
 type Liker struct {

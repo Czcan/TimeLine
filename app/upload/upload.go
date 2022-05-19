@@ -9,7 +9,7 @@ import (
 
 	"github.com/Czcan/TimeLine/app/helpers"
 	"github.com/Czcan/TimeLine/utils"
-	"github.com/jinzhu/gorm"
+	"gorm.io/gorm"
 )
 
 type Handler struct {
@@ -37,7 +37,7 @@ func (h Handler) UploadImage(w http.ResponseWriter, r *http.Request) {
 	if ok := utils.Exists(h.UploadPath); !ok {
 		os.MkdirAll(h.UploadPath, os.ModePerm)
 	}
-	savePath := fmt.Sprintf("%s/%d.jpg", h.UploadPath, 1)
+	savePath := fmt.Sprintf("%s/%d.jpg", h.UploadPath, user.ID)
 	fmt.Println(filepath.Abs(savePath))
 	f, err := os.OpenFile(savePath, os.O_RDWR|os.O_CREATE, os.ModePerm)
 	if err != nil {

@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/rs/xid"
+	"github.com/sirupsen/logrus"
 	log "github.com/sirupsen/logrus"
 	"github.com/tomasen/realip"
 )
@@ -47,8 +48,9 @@ func Logger(option Option) func(h http.Handler) http.Handler {
 			ctx := context.WithValue(r.Context(), "req_id", reqID)
 			startTime := time.Now()
 			sw := &statusWriter{ResponseWriter: w}
+			logrus.Info("info")
 			defer func() {
-				log.WithFields(log.Fields{
+				logFileds := log.Fields{
 					"req_id":   reqID,
 					"service":  option.ServiceName,
 					"path":     r.URL.Path,
@@ -58,7 +60,19 @@ func Logger(option Option) func(h http.Handler) http.Handler {
 					"duration": fmt.Sprintf("%v", time.Since(startTime)),
 					"params":   getParams(r),
 					"status":   sw.status,
-				}).Info()
+				}
+				// log.WithFields(log.Fields{
+				// 	"req_id":   reqID,
+				// 	"service":  option.ServiceName,
+				// 	"path":     r.URL.Path,
+				// 	"method":   r.Method,
+				// 	"ip":       realip.FromRequest(r),
+				// 	"date":     option.FormattedTime(startTime),
+				// 	"duration": fmt.Sprintf("%v", time.Since(startTime)),
+				// 	"params":   getParams(r),
+				// 	"status":   sw.status,
+				// }).Info("[TimeLine-Server]")
+				MethodDebug(r.Context(), r.URL.Path, logFileds)
 			}()
 			h.ServeHTTP(sw, r.WithContext(ctx))
 		})

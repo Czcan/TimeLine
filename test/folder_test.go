@@ -21,7 +21,7 @@ func TestFolderList(t *testing.T) {
 		INSERT INTO folders (id, user_id, name) VALUES (2, 1, 'folder2');
 	`)
 	testCases := []FolderListTestCase{
-		{Token: "123123", ExpectedFolders: `{"code":200,"data":[{"id":1,"name":"folder1","user_id":1,"create_at":0,"updated_at":0},{"id":2,"name":"folder2","user_id":1,"create_at":0,"updated_at":0}],"message":null}`},
+		{Token: "123123", ExpectedFolders: `{"code":200,"data":[{"id":1,"name":"folder1","user_id":1,"created_at":0},{"id":2,"name":"folder2","user_id":1,"created_at":0}],"message":null}`},
 		{Token: "123456", ExpectedError: `invalid user`},
 	}
 	for i, testCase := range testCases {
@@ -50,7 +50,7 @@ func TestFolderCreate(t *testing.T) {
 		INSERT INTO folders (id, user_id, name) VALUES (2, 1, 'folder2');
 	`)
 	testCases := []FolderCreateTestCase{
-		{Token: "123123", Name: "folder3", ExpectedFolders: `{"code":200,"data":[{"id":1,"name":"folder1","user_id":1,"create_at":0,"updated_at":0},{"id":2,"name":"folder2","user_id":1,"create_at":0,"updated_at":0},{"id":3,"name":"folder3","user_id":1,"create_at":0,"updated_at":0}],"message":null}`},
+		{Token: "123123", Name: "folder3", ExpectedFolders: `{"code":200,"data":[{"id":1,"name":"folder1","user_id":1,"created_at":0},{"id":2,"name":"folder2","user_id":1,"created_at":0},{"id":3,"name":"folder3","user_id":1,"created_at":0}],"message":null}`},
 		{Token: "123123", ExpectedError: `invalid params`},
 		{Token: "123456", ExpectedError: `invalid user`},
 	}
@@ -61,6 +61,7 @@ func TestFolderCreate(t *testing.T) {
 		if testCase.ExpectedError != "" && !strings.Contains(body, testCase.ExpectedError) {
 			t.Errorf(color.RedString("TestFolderCreate #%v: expected error %v but got %v", i+1, testCase.ExpectedError, body))
 		}
+		body = ExtractDate(body, "data.#.created_at", "0")
 		if testCase.ExpectedFolders != "" && body != testCase.ExpectedFolders {
 			t.Errorf(color.RedString("TestFolderCreate #%v: expected folders %v but got %v", i+1, testCase.ExpectedFolders, body))
 		}
@@ -86,7 +87,7 @@ func TestDeletedFolder(t *testing.T) {
 		INSERT INTO notes (id, user_id, folder_id, content) VALUES (3, 1, 2, "note3");
 	`)
 	testCases := []FolderDeletedTestCase{
-		{Token: "123123", ID: "1", ExpectedFolder: `{"code":200,"data":[{"id":2,"name":"folder2","user_id":1,"create_at":0,"updated_at":0}],"message":null}`, ExpectedNote: `3,1,2,note3`},
+		{Token: "123123", ID: "1", ExpectedFolder: `{"code":200,"data":[{"id":2,"name":"folder2","user_id":1,"created_at":0}],"message":null}`, ExpectedNote: `3,1,2,note3`},
 		{Token: "invalid user", ExpectedError: "invalid user"},
 		{Token: "123123", ID: "invalid id", ExpectedError: "invalid params"},
 	}

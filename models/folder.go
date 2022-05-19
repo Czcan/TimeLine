@@ -1,24 +1,22 @@
 package models
 
 import (
-	"time"
-
 	"github.com/Czcan/TimeLine/utils/database"
-	"github.com/jinzhu/gorm"
+	"gorm.io/gorm"
 )
 
 type Folder struct {
-	ID        int       `json:"id"`
-	Name      string    `json:"name"`
-	UserID    int       `json:"user_id"`
-	CreatedAt int       `json:"create_at"`
-	UpdatedAt int       `json:"updated_at"`
-	DeletedAt time.Time `json:"-"`
+	ID        int            `json:"id"`
+	Name      string         `json:"name"`
+	UserID    int            `json:"user_id"`
+	CreatedAt int            `json:"created_at"`
+	UpdatedAt int            `json:"-"`
+	DeletedAt gorm.DeletedAt `json:"-"`
 }
 
 func GetFolderList(db *gorm.DB, userID int) []Folder {
 	folders := []Folder{}
-	db.Where("user_id = ?", userID).Find(&folders)
+	db.Where("user_id = ? AND deleted_at is null", userID).Find(&folders)
 	if len(folders) == 0 {
 		return nil
 	}

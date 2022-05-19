@@ -11,7 +11,7 @@ import (
 	"github.com/Czcan/TimeLine/models"
 	"github.com/Czcan/TimeLine/utils/jwt"
 	"github.com/iancoleman/strcase"
-	"github.com/jinzhu/gorm"
+	"gorm.io/gorm"
 )
 
 func GetCurrentUser(r *http.Request, db *gorm.DB) (*models.User, error) {

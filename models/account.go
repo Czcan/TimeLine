@@ -3,19 +3,22 @@ package models
 import (
 	"fmt"
 	"strings"
+
+	"gorm.io/gorm"
 )
 
 type Account struct {
-	ID         int      `json:"id"`
-	UserID     int      `json:"user_id"`
-	Images     string   `json:"-"`
-	Title      string   `json:"title"`
-	Content    string   `json:"content"`
-	Likers     int      `json:"likers"`
-	Follwers   int      `json:"follwers"`
-	CreatedAt  int      `json:"created_at"`
-	UpdatedAt  int      `json:"-"`
-	ImageSlice []string `json:"images" gorm:"-"`
+	ID         int            `json:"id"`
+	UserID     int            `json:"user_id"`
+	Images     string         `json:"-"`
+	Title      string         `json:"title"`
+	Content    string         `json:"content"`
+	Likers     int            `json:"likers"`
+	Follwers   int            `json:"follwers"`
+	CreatedAt  int            `json:"created_at"`
+	UpdatedAt  int            `json:"-"`
+	DeletedAt  gorm.DeletedAt `json:"-"`
+	ImageSlice []string       `json:"images" gorm:"-"`
 }
 
 func (a *Account) ConCatImages() {

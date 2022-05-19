@@ -2,13 +2,15 @@ package config
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 	"sync"
 
 	"github.com/jinzhu/configor"
-	"github.com/jinzhu/gorm"
-	_ "github.com/jinzhu/gorm/dialects/mysql"
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 type AppConfig struct {
@@ -46,14 +48,23 @@ func MustGetAppConfig() AppConfig {
 
 func MustGetDB() *gorm.DB {
 	c := MustGetAppConfig()
-	DB, err := gorm.Open("mysql", c.DB)
+	logger := logger.New(
+		log.New(os.Stdout, "\r\n", log.LstdFlags),
+		logger.Config{
+			LogLevel:                  logger.Info,
+			IgnoreRecordNotFoundError: true,
+			Colorful:                  true,
+		},
+	)
+	DB, err := gorm.Open(mysql.Open(c.DB), &gorm.Config{
+		Logger: logger,
+	})
 	if err != nil {
 		panic(err)
 	}
 	fmt.Println("Success to connect!")
 	fmt.Println("DB:", c.DB)
 	fmt.Println("HOST Port:", c.Port)
-	DB.LogMode(true)
 	return DB
 }
 

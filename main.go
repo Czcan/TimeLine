@@ -15,7 +15,6 @@ func main() {
 	c := config.MustGetAppConfig()
 	db := config.MustGetDB()
 	db.AutoMigrate(&models.User{}, &models.Folder{}, &models.Note{}, &models.Collection{}, &models.Account{}, &models.Comment{})
-	defer db.Close()
 
 	jwtClient := jwt.New([]byte("123"), time.Hour*2, "TimeLine")
 	router := server.New(db, jwtClient, c)

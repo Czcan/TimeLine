@@ -19,7 +19,7 @@ import (
 	"github.com/Czcan/TimeLine/utils/logger"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
-	"github.com/jinzhu/gorm"
+	"gorm.io/gorm"
 )
 
 func New(db *gorm.DB, jwtClient jwt.JWTValidate, c config.AppConfig) *chi.Mux {
@@ -59,7 +59,7 @@ func New(db *gorm.DB, jwtClient jwt.JWTValidate, c config.AppConfig) *chi.Mux {
 	r.Post("/api/note/create", noteHandler.Create)
 	r.Post("/api/note/update", noteHandler.Update)
 	r.Delete("/api/note/deleted", noteHandler.Deleted)
-	
+
 	//folder
 	r.Get("/api/folder/list", folderHandler.List)
 	r.Post("/api/folder/create", folderHandler.Create)

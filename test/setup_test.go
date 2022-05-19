@@ -12,7 +12,9 @@ import (
 	"github.com/Czcan/TimeLine/server"
 	"github.com/ddliu/go-httpclient"
 	"github.com/go-chi/chi"
-	"github.com/jinzhu/gorm"
+	"github.com/tidwall/gjson"
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
 )
 
 var (
@@ -28,15 +30,14 @@ type Record struct {
 
 func setup() {
 	c := config.MustGetAppConfig()
-
-	DB, err = gorm.Open("mysql", c.DB)
+	DB, err = gorm.Open(mysql.Open(c.DB), &gorm.Config{})
 	if err != nil {
 		panic(err)
 	}
 
-	DB.DropTableIfExists(&models.User{}, &models.Folder{}, &models.Note{}, &models.Collection{}, &models.Account{}, &models.Comment{})
+	DB.Migrator().DropTable(&models.User{}, &models.Folder{}, &models.Note{}, &models.Collection{}, &models.Account{}, &models.Comment{})
 	DB.AutoMigrate(&models.User{}, &models.Folder{}, &models.Note{}, &models.Collection{}, &models.Account{}, &models.Comment{})
-	
+
 	createdData()
 
 	jwtClient := &JWTClientMock{}
@@ -154,4 +155,15 @@ func GetRecords(db *gorm.DB, tableName string, columns string, extra ...string) 
 		results = append(results, record.Value)
 	}
 	return strings.Join(results, "; ")
+}
+
+func ExtractDate(body string, filedName string, new string) string {
+	values := gjson.Get(body, filedName).Array()
+	for _, value := range values {
+		if value.String() == "0" {
+			continue
+		}
+		body = strings.Replace(body, value.String(), new, -1)
+	}
+	return body
 }

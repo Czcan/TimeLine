@@ -1,6 +1,6 @@
 package database
 
-import "github.com/jinzhu/gorm"
+import "gorm.io/gorm"
 
 func Transaction(db *gorm.DB, callback func(db *gorm.DB) error) error {
 	tx := db.Begin()

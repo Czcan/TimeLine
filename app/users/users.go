@@ -8,7 +8,7 @@ import (
 	"github.com/Czcan/TimeLine/app/helpers"
 	"github.com/Czcan/TimeLine/models"
 	"github.com/Czcan/TimeLine/utils/jwt"
-	"github.com/jinzhu/gorm"
+	"gorm.io/gorm"
 )
 
 type Handler struct {
