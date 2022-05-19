@@ -5,6 +5,7 @@ import (
 
 	"github.com/Czcan/TimeLine/app/helpers"
 	"github.com/Czcan/TimeLine/models"
+	"github.com/Czcan/TimeLine/utils/errcode"
 	"gorm.io/gorm"
 )
 
@@ -19,13 +20,13 @@ func New(db *gorm.DB) Handler {
 func (h Handler) Create(w http.ResponseWriter, r *http.Request) {
 	user, err := helpers.GetCurrentUser(r, h.DB)
 	if err != nil {
-		helpers.RenderFailureJSON(w, 400, "invalid user")
+		helpers.RenderFailureJSON(w, 400, errcode.GetMsg(errcode.ERROR_TOKEN))
 		return
 	}
 	folderID := helpers.GetParamsInt(r, "folder_id")
 	content := r.FormValue("content")
 	if folderID == 0 || content == "" {
-		helpers.RenderFailureJSON(w, 400, "invalid params")
+		helpers.RenderFailureJSON(w, 400, errcode.GetMsg(errcode.ERROR_PARAMS))
 		return
 	}
 	note := &models.Note{FolderID: folderID, Content: content, UserID: user.ID}
@@ -40,12 +41,12 @@ func (h Handler) Create(w http.ResponseWriter, r *http.Request) {
 func (h Handler) List(w http.ResponseWriter, r *http.Request) {
 	user, err := helpers.GetCurrentUser(r, h.DB)
 	if err != nil {
-		helpers.RenderFailureJSON(w, 400, "invalid user")
+		helpers.RenderFailureJSON(w, 400, errcode.GetMsg(errcode.ERROR_TOKEN))
 		return
 	}
 	folderID := helpers.GetParamsInt(r, "folder_id")
 	if folderID == 0 {
-		helpers.RenderFailureJSON(w, 400, "invalid params")
+		helpers.RenderFailureJSON(w, 400, errcode.GetMsg(errcode.ERROR_PARAMS))
 		return
 	}
 	notes := models.GetNoteList(h.DB, user.ID, folderID)
@@ -55,12 +56,12 @@ func (h Handler) List(w http.ResponseWriter, r *http.Request) {
 func (h Handler) Update(w http.ResponseWriter, r *http.Request) {
 	user, err := helpers.GetCurrentUser(r, h.DB)
 	if err != nil {
-		helpers.RenderFailureJSON(w, 400, "invalid user")
+		helpers.RenderFailureJSON(w, 400, errcode.GetMsg(errcode.ERROR_TOKEN))
 		return
 	}
 	noteID := helpers.GetParamsInt(r, "note_id")
 	if noteID == 0 {
-		helpers.RenderFailureJSON(w, 400, "invalid params")
+		helpers.RenderFailureJSON(w, 400, errcode.GetMsg(errcode.ERROR_PARAMS))
 		return
 	}
 	status := helpers.GetParamsBool(r, "status")
@@ -71,17 +72,17 @@ func (h Handler) Update(w http.ResponseWriter, r *http.Request) {
 func (h Handler) Deleted(w http.ResponseWriter, r *http.Request) {
 	user, err := helpers.GetCurrentUser(r, h.DB)
 	if err != nil {
-		helpers.RenderFailureJSON(w, 400, "invalid user")
+		helpers.RenderFailureJSON(w, 400, errcode.GetMsg(errcode.ERROR_TOKEN))
 		return
 	}
 	noteID := helpers.GetParamsInt(r, "note_id")
 	if noteID <= 0 {
-		helpers.RenderFailureJSON(w, 400, "invalid params")
+		helpers.RenderFailureJSON(w, 400, errcode.GetMsg(errcode.ERROR_PARAMS))
 		return
 	}
 	folderID := helpers.GetParamsInt(r, "folder_id")
 	if folderID <= 0 {
-		helpers.RenderFailureJSON(w, 400, "invalid params")
+		helpers.RenderFailureJSON(w, 400, errcode.GetMsg(errcode.ERROR_PARAMS))
 		return
 	}
 	h.DB.Where("id = ?", noteID).Delete(&models.Note{})

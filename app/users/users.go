@@ -7,7 +7,9 @@ import (
 	"github.com/Czcan/TimeLine/app/entries"
 	"github.com/Czcan/TimeLine/app/helpers"
 	"github.com/Czcan/TimeLine/models"
+	"github.com/Czcan/TimeLine/utils/errcode"
 	"github.com/Czcan/TimeLine/utils/jwt"
+	"github.com/iancoleman/strcase"
 	"gorm.io/gorm"
 )
 
@@ -76,16 +78,16 @@ func (h Handler) Register(w http.ResponseWriter, r *http.Request) {
 func (h Handler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 	user, err := helpers.GetCurrentUser(r, h.DB)
 	if err != nil {
-		helpers.RenderFailureJSON(w, 400, "invalid user")
+		helpers.RenderFailureJSON(w, 400, errcode.GetMsg(errcode.ERROR_TOKEN))
 		return
 	}
 	key := r.FormValue("key")
 	value := r.FormValue("value")
 	if key == "" || value == "" {
-		helpers.RenderFailureJSON(w, 400, "invalid params")
+		helpers.RenderFailureJSON(w, 400, errcode.GetMsg(errcode.ERROR_PARAMS))
 		return
 	}
-	updateSQL := fmt.Sprintf("UPDATE users SET %v = ? WHERE id = ?", key)
+	updateSQL := fmt.Sprintf("UPDATE users SET %v = ? WHERE id = ?", strcase.ToSnake(key))
 	h.DB.Exec(updateSQL, value, user.ID)
 	u := models.User{}
 	h.DB.Where("id = ?", user.ID).First(&u)
@@ -103,7 +105,7 @@ func (h Handler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 func (h Handler) Collection(w http.ResponseWriter, r *http.Request) {
 	user, err := helpers.GetCurrentUser(r, h.DB)
 	if err != nil {
-		helpers.RenderFailureJSON(w, 400, "invalid user")
+		helpers.RenderFailureJSON(w, 400, errcode.GetMsg(errcode.ERROR_TOKEN))
 		return
 	}
 	selectSQL := `

@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"math/rand"
 	"os"
+	"path/filepath"
 	"regexp"
 	"time"
 )
@@ -47,4 +48,20 @@ func GenerateNumber(length int, source string) string {
 func Exists(filename string) bool {
 	_, err := os.Stat(filename)
 	return err == nil || os.IsExist(err)
+}
+
+func InferRootDir() string {
+	cwd, err := os.Getwd()
+	if err != nil {
+		panic(err)
+	}
+	var infer func(d string) string
+	infer = func(d string) string {
+		if Exists(d + "/config.yml") {
+			return d
+		}
+		return infer(filepath.Dir(d))
+	}
+
+	return infer(cwd)
 }

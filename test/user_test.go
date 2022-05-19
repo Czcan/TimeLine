@@ -84,7 +84,7 @@ type UpdateUserTestCase struct {
 func TestUpdateUser(t *testing.T) {
 	setup()
 	testCases := []UpdateUserTestCase{
-		{Token: "123123", Key: "nick_name", Value: "nick_name", ExpectedUser: `{"code":200,"data":{"token":"123123","email":"test1@qq.com","nick_name":"nick_name","avatar":"","gender":0,"age":0,"signature":""},"message":null}`},
+		{Token: "123123", Key: "NickName", Value: "nick_name", ExpectedUser: `{"code":200,"data":{"token":"123123","email":"test1@qq.com","nick_name":"nick_name","avatar":"","gender":0,"age":0,"signature":""},"message":null}`},
 		{Token: "123456", ExpectedError: "invalid user"},
 		{Token: "123123", Key: "", Value: "invalid params", ExpectedError: "invalid params"},
 		{Token: "123123", Key: "Age", Value: "18", ExpectedUser: `{"code":200,"data":{"token":"123123","email":"test1@qq.com","nick_name":"nick_name","avatar":"","gender":0,"age":18,"signature":""},"message":null}`},

@@ -6,6 +6,7 @@ import (
 
 	"github.com/Czcan/TimeLine/app/helpers"
 	"github.com/Czcan/TimeLine/models"
+	"github.com/Czcan/TimeLine/utils/errcode"
 	"gorm.io/gorm"
 )
 
@@ -20,12 +21,12 @@ func New(db *gorm.DB) Handler {
 func (h Handler) Create(w http.ResponseWriter, r *http.Request) {
 	user, err := helpers.GetCurrentUser(r, h.DB)
 	if err != nil {
-		helpers.RenderFailureJSON(w, 400, "invalid user")
+		helpers.RenderFailureJSON(w, 400, errcode.GetMsg(errcode.ERROR_TOKEN))
 		return
 	}
 	name := r.FormValue("name")
 	if name == "" {
-		helpers.RenderFailureJSON(w, 400, "invalid params")
+		helpers.RenderFailureJSON(w, 400, errcode.GetMsg(errcode.ERROR_PARAMS))
 		return
 	}
 	folder := &models.Folder{Name: name, UserID: user.ID}
@@ -40,7 +41,7 @@ func (h Handler) Create(w http.ResponseWriter, r *http.Request) {
 func (h Handler) List(w http.ResponseWriter, r *http.Request) {
 	user, err := helpers.GetCurrentUser(r, h.DB)
 	if err != nil {
-		helpers.RenderFailureJSON(w, 400, "invalid user")
+		helpers.RenderFailureJSON(w, 400, errcode.GetMsg(errcode.ERROR_TOKEN))
 		return
 	}
 	folders := models.GetFolderList(h.DB, user.ID)
@@ -50,12 +51,12 @@ func (h Handler) List(w http.ResponseWriter, r *http.Request) {
 func (h Handler) Deleted(w http.ResponseWriter, r *http.Request) {
 	user, err := helpers.GetCurrentUser(r, h.DB)
 	if err != nil {
-		helpers.RenderFailureJSON(w, 400, "invalid user")
+		helpers.RenderFailureJSON(w, 400, errcode.GetMsg(errcode.ERROR_TOKEN))
 		return
 	}
 	folderID := helpers.GetParamsInt(r, "folder_id")
 	if folderID <= 0 {
-		helpers.RenderFailureJSON(w, 400, "invalid params")
+		helpers.RenderFailureJSON(w, 400, errcode.GetMsg(errcode.ERROR_PARAMS))
 		return
 	}
 	fmt.Println(folderID)
