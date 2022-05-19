@@ -7,6 +7,8 @@ import (
 	"github.com/Czcan/TimeLine/app/entries"
 	"github.com/Czcan/TimeLine/app/helpers"
 	"github.com/Czcan/TimeLine/models"
+	"github.com/Czcan/TimeLine/utils/errcode"
+	"github.com/Czcan/TimeLine/utils/validate"
 	"github.com/go-chi/chi"
 	"gorm.io/gorm"
 )
@@ -34,26 +36,15 @@ func (h Handler) CreateAccount(w http.ResponseWriter, r *http.Request) {
 func (h Handler) AccoutDetail(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 	accountID, _ := strconv.Atoi(id)
-	if accountID <= 0 || id == "" {
-		helpers.RenderFailureJSON(w, 400, "invalid param")
+	if !validate.ValidateGtInt(0, accountID) || !validate.ValidateStringEmpty(id) {
+		helpers.RenderFailureJSON(w, 400, errcode.GetMsg(errcode.ERROR_PARAMS))
 		return
 	}
-	var (
-		account  = models.Account{}
-		comments = []entries.Comment{}
-	)
-	if err := h.DB.Where("id = ?", accountID).First(&account).Error; err != nil {
+	account, comments, err := models.FindAccountDetail(h.DB, accountID)
+	if err != nil {
 		helpers.RenderFailureJSON(w, 400, err.Error())
 		return
 	}
-	account.ConCatImages()
-	selectSQL := `
-		SELECT comments.content, comments.created_at AS date, users.nick_name, CONCAT('/images/', users.id, '.jpg') AS avatar_url
-		FROM comments
-		LEFT JOIN users ON comments.user_id = users.id
-		WHERE comments.account_id = ?
-	`
-	h.DB.Raw(selectSQL, accountID).Scan(&comments)
 	helpers.RenderSuccessJSON(w, 200, entries.AccountDetail{
 		Account:  account,
 		Comments: comments,

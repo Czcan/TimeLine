@@ -22,7 +22,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func New(db *gorm.DB, jwtClient jwt.JWTValidate, c config.AppConfig) *chi.Mux {
+func New(db *gorm.DB, jwtClient jwt.JWTValidate) *chi.Mux {
 	r := chi.NewRouter()
 
 	r.Use(middleware.Recoverer)
@@ -34,12 +34,14 @@ func New(db *gorm.DB, jwtClient jwt.JWTValidate, c config.AppConfig) *chi.Mux {
 			return t.In(time.FixedZone("local", 8*60*60)).Format("2006-01-02 15:04:05")
 		},
 	}))
-	userHandler := users.New(db, jwtClient, c.AvatarPath)
+
+	userHandler := users.New(db, jwtClient)
 	noteHandler := notes.New(db)
-	uploadHandler := upload.New(db, c.AvatarPath)
+	uploadHandler := upload.New(db)
 	accountHandler := accounts.New(db)
 	likerHandler := likers.New(db)
 	folderHandler := folder.New(db)
+
 	//user
 	r.Post("/api/auth", userHandler.Auth)
 	r.Post("/api/register", userHandler.Register)
@@ -70,8 +72,8 @@ func New(db *gorm.DB, jwtClient jwt.JWTValidate, c config.AppConfig) *chi.Mux {
 	r.Get("/api/follwer", likerHandler.Follwer)
 
 	//staticFS
-	r.Get("/images/*", StatisFS(c.AvatarPath))
-	r.Get("/accountimg/*", StatisFS(c.AccountImgPath))
+	r.Get("/images/*", StatisFS(config.MustGetAppConfig().AvatarPath))
+	r.Get("/accountimg/*", StatisFS(config.MustGetAppConfig().AccountImgPath))
 
 	//test
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {

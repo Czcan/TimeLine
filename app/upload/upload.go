@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 
 	"github.com/Czcan/TimeLine/app/helpers"
+	"github.com/Czcan/TimeLine/config"
 	"github.com/Czcan/TimeLine/utils"
 	"gorm.io/gorm"
 )
@@ -17,8 +18,8 @@ type Handler struct {
 	UploadPath string
 }
 
-func New(db *gorm.DB, path string) Handler {
-	return Handler{DB: db, UploadPath: path}
+func New(db *gorm.DB) Handler {
+	return Handler{DB: db, UploadPath: config.MustGetAppConfig().AvatarPath}
 }
 
 func (h Handler) UploadImage(w http.ResponseWriter, r *http.Request) {

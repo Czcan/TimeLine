@@ -17,7 +17,7 @@ func main() {
 	db.AutoMigrate(&models.User{}, &models.Folder{}, &models.Note{}, &models.Collection{}, &models.Account{}, &models.Comment{})
 
 	jwtClient := jwt.New([]byte("123"), time.Hour*2, "TimeLine")
-	router := server.New(db, jwtClient, c)
+	router := server.New(db, jwtClient)
 
 	log.Printf("localhost%s\n", c.Port)
 	log.Fatal(http.ListenAndServe(c.Port, router))

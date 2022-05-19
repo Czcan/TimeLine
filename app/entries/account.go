@@ -1,16 +1,13 @@
 package entries
 
-import (
-	"time"
-
-	"github.com/Czcan/TimeLine/models"
-)
-
 type Account struct {
-	ID        int       `json:"id"`
-	Title     string    `json:"title"`
-	Content   string    `json:"content"`
-	CreatedAt time.Time `json:"created_at"`
+	ID         int      `json:"id"`
+	Title      string   `json:"title"`
+	Content    string   `json:"content"`
+	Likers     int      `json:"likers"`
+	Follwers   int      `json:"follwers"`
+	CreatedAt  int      `json:"created_at"`
+	ImageSlice []string `json:"images"`
 }
 
 type Comment struct {
@@ -21,6 +18,6 @@ type Comment struct {
 }
 
 type AccountDetail struct {
-	Account  models.Account `json:"account"`
-	Comments []Comment      `json:"comments"`
+	Account  *Account  `json:"account"`
+	Comments []Comment `json:"comments"`
 }

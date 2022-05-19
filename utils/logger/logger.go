@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/rs/xid"
-	"github.com/sirupsen/logrus"
 	log "github.com/sirupsen/logrus"
 	"github.com/tomasen/realip"
 )
@@ -48,9 +47,8 @@ func Logger(option Option) func(h http.Handler) http.Handler {
 			ctx := context.WithValue(r.Context(), "req_id", reqID)
 			startTime := time.Now()
 			sw := &statusWriter{ResponseWriter: w}
-			logrus.Info("info")
 			defer func() {
-				logFileds := log.Fields{
+				fields := log.Fields{
 					"req_id":   reqID,
 					"service":  option.ServiceName,
 					"path":     r.URL.Path,
@@ -61,18 +59,13 @@ func Logger(option Option) func(h http.Handler) http.Handler {
 					"params":   getParams(r),
 					"status":   sw.status,
 				}
-				// log.WithFields(log.Fields{
-				// 	"req_id":   reqID,
-				// 	"service":  option.ServiceName,
-				// 	"path":     r.URL.Path,
-				// 	"method":   r.Method,
-				// 	"ip":       realip.FromRequest(r),
-				// 	"date":     option.FormattedTime(startTime),
-				// 	"duration": fmt.Sprintf("%v", time.Since(startTime)),
-				// 	"params":   getParams(r),
-				// 	"status":   sw.status,
-				// }).Info("[TimeLine-Server]")
-				MethodDebug(r.Context(), r.URL.Path, logFileds)
+				if sw.status >= 400 && sw.status <= 499 {
+					MethodWarn(r.Context(), "HTTP Waring", fields)
+				} else if sw.status >= 500 && sw.status <= 599 {
+					MethodError(r.Context(), "HTTP Error", fields)
+				} else {
+					MethodInfo(r.Context(), "HTTP Info", fields)
+				}
 			}()
 			h.ServeHTTP(sw, r.WithContext(ctx))
 		})

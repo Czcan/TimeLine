@@ -1,7 +1,6 @@
 package users
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/Czcan/TimeLine/app/entries"
@@ -9,37 +8,38 @@ import (
 	"github.com/Czcan/TimeLine/models"
 	"github.com/Czcan/TimeLine/utils/errcode"
 	"github.com/Czcan/TimeLine/utils/jwt"
-	"github.com/iancoleman/strcase"
+	"github.com/Czcan/TimeLine/utils/validate"
 	"gorm.io/gorm"
 )
 
 type Handler struct {
-	DB         *gorm.DB
-	JwtClient  jwt.JWTValidate
-	UploadPath string
+	DB        *gorm.DB
+	JWTClient jwt.JWTValidate
 }
 
-func New(db *gorm.DB, jwtClient jwt.JWTValidate, path string) Handler {
+func New(db *gorm.DB, client jwt.JWTValidate) Handler {
 	return Handler{
-		DB:         db,
-		JwtClient:  jwtClient,
-		UploadPath: path,
+		DB:        db,
+		JWTClient: client,
 	}
 }
 
 func (h Handler) Auth(w http.ResponseWriter, r *http.Request) {
 	email := r.FormValue("email")
 	pwd := r.FormValue("password")
-	if email == "" || pwd == "" {
+
+	if !validate.ValidateEmail(email) || !validate.ValidateStringEmpty(pwd) {
 		helpers.RenderFailureJSON(w, 400, "email or password is empty")
 		return
 	}
+
 	user, err := models.FindUser(h.DB, email, pwd)
 	if err != nil {
 		helpers.RenderFailureJSON(w, 400, "email or password is error")
 		return
 	}
-	token, err := h.JwtClient.GetToken(user.Uid)
+
+	token, err := h.JWTClient.GetToken(user.Uid)
 	if err != nil {
 		helpers.RenderFailureJSON(w, 400, err.Error())
 		return
@@ -59,11 +59,11 @@ func (h Handler) Register(w http.ResponseWriter, r *http.Request) {
 	email := r.FormValue("email")
 	password := r.FormValue("password")
 	password1 := r.FormValue("password1")
-	if email == "" {
+	if !validate.ValidateEmail(email) {
 		helpers.RenderFailureJSON(w, 400, "email is empty")
 		return
 	}
-	if password != password1 {
+	if password != password1 || !validate.ValidateStringEmpty(password, password1) {
 		helpers.RenderFailureJSON(w, 400, "incorrect password")
 		return
 	}
@@ -83,22 +83,19 @@ func (h Handler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 	}
 	key := r.FormValue("key")
 	value := r.FormValue("value")
-	if key == "" || value == "" {
+	if !validate.ValidateStringEmpty(key, value) {
 		helpers.RenderFailureJSON(w, 400, errcode.GetMsg(errcode.ERROR_PARAMS))
 		return
 	}
-	updateSQL := fmt.Sprintf("UPDATE users SET %v = ? WHERE id = ?", strcase.ToSnake(key))
-	h.DB.Exec(updateSQL, value, user.ID)
-	u := models.User{}
-	h.DB.Where("id = ?", user.ID).First(&u)
+	user = models.UpdateAndFindUser(h.DB, user.ID, key, value)
 	helpers.RenderSuccessJSON(w, 200, entries.Auth{
 		Token:     user.Uid,
-		Email:     u.Email,
-		NickName:  u.NickName,
-		Gender:    u.Gender,
-		Avatar:    u.Avatar,
-		Age:       u.Age,
-		Signature: u.Signature,
+		Email:     user.Email,
+		NickName:  user.NickName,
+		Gender:    user.Gender,
+		Avatar:    user.Avatar,
+		Age:       user.Age,
+		Signature: user.Signature,
 	})
 }
 

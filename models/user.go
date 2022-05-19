@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/Czcan/TimeLine/utils"
+	"github.com/iancoleman/strcase"
 	"gorm.io/gorm"
 )
 
@@ -62,4 +63,12 @@ func FindOrCreateUser(db *gorm.DB, email string, pwd string) (*User, error) {
 
 func (u *User) GetAvatarUrl() string {
 	return fmt.Sprintf("/images/%d.jpg", u.ID)
+}
+
+func UpdateAndFindUser(db *gorm.DB, id int, key, value string) *User {
+	updateSQL := fmt.Sprintf("UPDATE users SET %v = ? WHERE id = ?", strcase.ToSnake(key))
+	db.Exec(updateSQL, value, id)
+	user := &User{}
+	db.Where("id = ?", id).First(&user)
+	return user
 }

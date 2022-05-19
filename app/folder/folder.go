@@ -1,12 +1,12 @@
 package folder
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/Czcan/TimeLine/app/helpers"
 	"github.com/Czcan/TimeLine/models"
 	"github.com/Czcan/TimeLine/utils/errcode"
+	"github.com/Czcan/TimeLine/utils/validate"
 	"gorm.io/gorm"
 )
 
@@ -25,7 +25,7 @@ func (h Handler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	name := r.FormValue("name")
-	if name == "" {
+	if !validate.ValidateStringEmpty(name) {
 		helpers.RenderFailureJSON(w, 400, errcode.GetMsg(errcode.ERROR_PARAMS))
 		return
 	}
@@ -55,11 +55,10 @@ func (h Handler) Deleted(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	folderID := helpers.GetParamsInt(r, "folder_id")
-	if folderID <= 0 {
+	if !validate.ValidateGtInt(0, folderID) {
 		helpers.RenderFailureJSON(w, 400, errcode.GetMsg(errcode.ERROR_PARAMS))
 		return
 	}
-	fmt.Println(folderID)
 	err = models.DeletedFolderAndNote(h.DB, folderID)
 	if err != nil {
 		helpers.RenderFailureJSON(w, 400, "deleted failed")

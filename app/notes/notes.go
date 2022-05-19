@@ -6,6 +6,7 @@ import (
 	"github.com/Czcan/TimeLine/app/helpers"
 	"github.com/Czcan/TimeLine/models"
 	"github.com/Czcan/TimeLine/utils/errcode"
+	"github.com/Czcan/TimeLine/utils/validate"
 	"gorm.io/gorm"
 )
 
@@ -25,7 +26,7 @@ func (h Handler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 	folderID := helpers.GetParamsInt(r, "folder_id")
 	content := r.FormValue("content")
-	if folderID == 0 || content == "" {
+	if !validate.ValidateGtInt(0, folderID) || !validate.ValidateStringEmpty(content) {
 		helpers.RenderFailureJSON(w, 400, errcode.GetMsg(errcode.ERROR_PARAMS))
 		return
 	}
@@ -45,7 +46,7 @@ func (h Handler) List(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	folderID := helpers.GetParamsInt(r, "folder_id")
-	if folderID == 0 {
+	if !validate.ValidateGtInt(0, folderID) {
 		helpers.RenderFailureJSON(w, 400, errcode.GetMsg(errcode.ERROR_PARAMS))
 		return
 	}
@@ -60,7 +61,7 @@ func (h Handler) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	noteID := helpers.GetParamsInt(r, "note_id")
-	if noteID == 0 {
+	if !validate.ValidateGtInt(0, noteID) {
 		helpers.RenderFailureJSON(w, 400, errcode.GetMsg(errcode.ERROR_PARAMS))
 		return
 	}
@@ -76,12 +77,8 @@ func (h Handler) Deleted(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	noteID := helpers.GetParamsInt(r, "note_id")
-	if noteID <= 0 {
-		helpers.RenderFailureJSON(w, 400, errcode.GetMsg(errcode.ERROR_PARAMS))
-		return
-	}
 	folderID := helpers.GetParamsInt(r, "folder_id")
-	if folderID <= 0 {
+	if !validate.ValidateGtInt(0, noteID, folderID) {
 		helpers.RenderFailureJSON(w, 400, errcode.GetMsg(errcode.ERROR_PARAMS))
 		return
 	}
