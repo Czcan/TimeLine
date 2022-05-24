@@ -121,16 +121,16 @@ func TestUserCollection(t *testing.T) {
 		INSERT INTO accounts (id, title, content, images, likers, follwers) VALUES (3, "Account_3", "Account_3", "1", 11, 6);
 	`)
 	testCases := []UserCollectionTestCase{
-		{Token: "123123", ExpectedReponse: `{"code":200,"data":[{"id":1,"user_id":0,"title":"Account_1","content":"Account_1","likers":5,"follwers":6,"created_at":0,"images":["/accountimg/1/1.jpg","/accountimg/1/2.jpg","/accountimg/1/3.jpg"]},{"id":2,"user_id":0,"title":"Account_2","content":"Account_2","likers":10,"follwers":6,"created_at":0,"images":["/accountimg/2/1.jpg","/accountimg/2/2.jpg"]}],"message":null}`},
+		{Token: "123123", ExpectedReponse: `{"code":200,"data":[{"id":1,"user_id":0,"title":"Account_1","content":"Account_1","likers":5,"follwers":6,"created_at":0,"images":["/upload/accountimg/1/1.jpg","/upload/accountimg/1/2.jpg","/upload/accountimg/1/3.jpg"]},{"id":2,"user_id":0,"title":"Account_2","content":"Account_2","likers":10,"follwers":6,"created_at":0,"images":["/upload/accountimg/2/1.jpg","/upload/accountimg/2/2.jpg"]}],"message":null}`},
 		{Token: "123456", ExpectedError: "invalid user"},
 	}
 	for i, testCase := range testCases {
 		body := SingeGet(testCase.Token, "/api/user/collection", nil)
 		if testCase.ExpectedError != "" && !strings.Contains(body, testCase.ExpectedError) {
-			t.Errorf("TestUserCollection #%v: expected error %v but got %v", i+1, testCase.ExpectedError, body)
+			t.Errorf(color.RedString("TestUserCollection #%v: expected error %v but got %v", i+1, testCase.ExpectedError, body))
 		}
 		if testCase.ExpectedReponse != "" && body != testCase.ExpectedReponse {
-			t.Errorf("TestUserCollection #%v: expected collection %v but got %v", i+1, testCase.ExpectedReponse, body)
+			t.Errorf(color.RedString("TestUserCollection #%v: expected collection %v but got %v", i+1, testCase.ExpectedReponse, body))
 		}
 		color.Green("TestUserCollection #%v: success", i+1)
 	}

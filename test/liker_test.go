@@ -68,18 +68,18 @@ func TestFollwer(t *testing.T) {
 			"follwer": {testCase.Follwer},
 		})
 		if testCase.ExpectedError != "" && !strings.Contains(body, testCase.ExpectedError) {
-			t.Errorf("TestFollwer #%v: expected error %v but got %v", i+1, testCase.ExpectedError, body)
+			t.Errorf(color.RedString("TestFollwer #%v: expected error %v but got %v", i+1, testCase.ExpectedError, body))
 		}
 		if testCase.ExpectedResponse != "" && body != testCase.ExpectedResponse {
-			t.Errorf("TestFollwer #%v: expected response %v but got %v", i+1, testCase.ExpectedResponse, body)
+			t.Errorf(color.RedString("TestFollwer #%v: expected response %v but got %v", i+1, testCase.ExpectedResponse, body))
 		}
 		account := GetRecords(DB, "accounts", "id, title, content, images, likers, follwers", "where id = 1")
 		if testCase.ExpectedAccount != "" && account != testCase.ExpectedAccount {
-			t.Errorf("TestFollwer #%v: expected account %v but got %v", i+1, testCase.ExpectedAccount, account)
+			t.Errorf(color.RedString("TestFollwer #%v: expected account %v but got %v", i+1, testCase.ExpectedAccount, account))
 		}
 		collection := GetRecords(DB, "collections", "id, user_id, account_id")
 		if testCase.ExpectedCollection != "" && collection != testCase.ExpectedCollection {
-			t.Errorf("TestFollwer #%v: expected collection %v but got %v", i+1, testCase.ExpectedCollection, collection)
+			t.Errorf(color.RedString("TestFollwer #%v: expected collection %v but got %v", i+1, testCase.ExpectedCollection, collection))
 		}
 		color.Green("TestFollwer #%v: success", i+1)
 	}

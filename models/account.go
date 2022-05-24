@@ -2,9 +2,15 @@ package models
 
 import (
 	"fmt"
+	"mime/multipart"
+	"path/filepath"
+	"strconv"
 	"strings"
 
 	"github.com/Czcan/TimeLine/app/entries"
+	"github.com/Czcan/TimeLine/config"
+	"github.com/Czcan/TimeLine/utils/database"
+	"github.com/Czcan/TimeLine/utils/file"
 	"gorm.io/gorm"
 )
 
@@ -25,7 +31,7 @@ type Account struct {
 func (a *Account) ConCatImages() {
 	for _, imageID := range strings.Split(a.Images, ",") {
 		imageID = strings.TrimSpace(imageID)
-		image := fmt.Sprintf("/accountimg/%d/%s.jpg", a.ID, imageID)
+		image := fmt.Sprintf("/upload/accountimg/%d/%s.jpg", a.ID, imageID)
 		a.ImageSlice = append(a.ImageSlice, image)
 	}
 }
@@ -56,4 +62,42 @@ func FindAccountDetail(db *gorm.DB, accountID int) (*entries.Account, []entries.
 		ImageSlice: account.ImageSlice,
 	}
 	return entryAccount, comments, nil
+}
+
+func CreatedAccount(db *gorm.DB, userID int, content, title string, files []*multipart.FileHeader) error {
+	var (
+		count  = 0
+		images = []string{}
+	)
+	for i := range files {
+		images = append(images, strconv.Itoa(i+1))
+	}
+	account := &Account{
+		UserID:  userID,
+		Content: content,
+		Title:   title,
+		Images:  strings.Join(images, ","),
+	}
+	err := database.Transaction(db, func(tx *gorm.DB) error {
+		if err := tx.Create(&account).Error; err != nil {
+			return err
+		}
+		if err := tx.Raw("SELECT LAST_INSERT_ID() AS count").Scan(&count).Error; err != nil {
+			return err
+		}
+		return nil
+	})
+	if err != nil {
+		return err
+	}
+	c := config.MustGetAppConfig()
+	path := filepath.Join(c.AccountImgPath, strconv.Itoa(count))
+	for i, f := range files {
+		_, err := file.SaveUploadFile(f, path, strconv.Itoa(i+1))
+		if err != nil {
+			return err
+		}
+		images = append(images, strconv.Itoa(i+1))
+	}
+	return nil
 }

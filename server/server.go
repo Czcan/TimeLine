@@ -13,7 +13,6 @@ import (
 	"github.com/Czcan/TimeLine/app/notes"
 	"github.com/Czcan/TimeLine/app/upload"
 	"github.com/Czcan/TimeLine/app/users"
-	"github.com/Czcan/TimeLine/config"
 	"github.com/Czcan/TimeLine/middlewares"
 	"github.com/Czcan/TimeLine/utils/jwt"
 	"github.com/Czcan/TimeLine/utils/logger"
@@ -52,7 +51,9 @@ func New(db *gorm.DB, jwtClient jwt.JWTValidate) *chi.Mux {
 	r.Get("/api/account/home", accountHandler.AccountList)
 	r.Post("/api/account/create", accountHandler.CreateAccount)
 	r.Get("/api/account/detail/{id}", accountHandler.AccoutDetail)
-
+	r.Delete("/api/account/deleted", accountHandler.AccoutDelted)
+	r.Get("/api/account/person/list", accountHandler.AcccountPersonal)
+	
 	//upload
 	r.Post("/api/upload", uploadHandler.UploadImage)
 
@@ -72,8 +73,7 @@ func New(db *gorm.DB, jwtClient jwt.JWTValidate) *chi.Mux {
 	r.Get("/api/follwer", likerHandler.Follwer)
 
 	//staticFS
-	r.Get("/images/*", StatisFS(config.MustGetAppConfig().AvatarPath))
-	r.Get("/accountimg/*", StatisFS(config.MustGetAppConfig().AccountImgPath))
+	r.Get("/upload/*", StatisFS("/upload"))
 
 	//test
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
