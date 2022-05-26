@@ -1,7 +1,6 @@
 package file
 
 import (
-	"fmt"
 	"io"
 	"io/ioutil"
 	"mime/multipart"
@@ -55,9 +54,7 @@ func SaveUploadFile(file *multipart.FileHeader, path string, filename string) (s
 	}
 	defer src.Close()
 	uploadPath := filepath.Join(path, filename+".jpg")
-	fmt.Println(uploadPath)
 	dst, err := os.OpenFile(uploadPath, os.O_CREATE|os.O_RDWR, os.ModePerm)
-	fmt.Println(err)
 	if err != nil {
 		return "", err
 	}

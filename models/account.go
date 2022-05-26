@@ -28,30 +28,24 @@ type Account struct {
 	ImageSlice []string       `json:"images" gorm:"-"`
 }
 
-func (a *Account) ConCatImages() {
+func (a *Account) AfterFind(tx *gorm.DB) (err error) {
 	for _, imageID := range strings.Split(a.Images, ",") {
 		imageID = strings.TrimSpace(imageID)
 		image := fmt.Sprintf("/upload/accountimg/%d/%s.jpg", a.ID, imageID)
 		a.ImageSlice = append(a.ImageSlice, image)
 	}
+	return nil
 }
 
-func FindAccountDetail(db *gorm.DB, accountID int) (*entries.Account, []entries.Comment, error) {
+func FindAccountDetail(db *gorm.DB, accountID int, userID int) (*entries.Account, []entries.Comment, *entries.LikerFollwer, error) {
 	var (
-		account  = &Account{}
-		comments = []entries.Comment{}
+		account      = &Account{}
+		LikerFollwer = &entries.LikerFollwer{}
 	)
 	if err := db.Where("id = ?", accountID).First(&account).Error; err != nil {
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
-	account.ConCatImages()
-	selectSQL := `
-		SELECT comments.content, comments.created_at AS date, users.nick_name, CONCAT('/images/', users.id, '.jpg') AS avatar_url
-		FROM comments
-		LEFT JOIN users ON comments.user_id = users.id
-		WHERE comments.account_id = ?
-	`
-	db.Raw(selectSQL, accountID).Scan(&comments)
+	comments := FindComments(db, accountID)
 	entryAccount := &entries.Account{
 		Title:      account.Title,
 		Content:    account.Content,
@@ -61,7 +55,10 @@ func FindAccountDetail(db *gorm.DB, accountID int) (*entries.Account, []entries.
 		CreatedAt:  account.CreatedAt,
 		ImageSlice: account.ImageSlice,
 	}
-	return entryAccount, comments, nil
+	if userID > 0 {
+		db.Raw("SELECT is_liked, is_follwer FROM likers WHERE user_id = ? AND account_id = ?", userID, accountID).Scan(&LikerFollwer)
+	}
+	return entryAccount, comments, LikerFollwer, nil
 }
 
 func CreatedAccount(db *gorm.DB, userID int, content, title string, files []*multipart.FileHeader) error {

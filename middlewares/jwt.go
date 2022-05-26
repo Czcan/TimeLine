@@ -3,6 +3,7 @@ package middlewares
 import (
 	"context"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/Czcan/TimeLine/utils/jwt"
@@ -12,7 +13,7 @@ func JwtAuthentication(jwtClient jwt.JWTValidate) func(next http.Handler) http.H
 	return func(next http.Handler) http.Handler {
 		fn := func(w http.ResponseWriter, r *http.Request) {
 			auth := r.Header.Get("Authorization")
-			if auth != "" {
+			if strings.TrimSpace(auth) != "" {
 				claim, err := jwtClient.ParseToken(auth)
 				if err != nil {
 					next.ServeHTTP(w, r)

@@ -105,16 +105,12 @@ func (h Handler) Collection(w http.ResponseWriter, r *http.Request) {
 		helpers.RenderFailureJSON(w, 400, errcode.GetMsg(errcode.ERROR_TOKEN))
 		return
 	}
-	selectSQL := `
-		SELECT accounts.id AS id, title, content, accounts.created_at, images, likers, follwers 
-		FROM accounts 
-		LEFT JOIN collections ON accounts.id = collections.account_id 
-		WHERE collections.user_id = ?
-	`
-	collections := []models.Account{}
-	h.DB.Raw(selectSQL, user.ID).Scan(&collections)
-	for i := 0; i < len(collections); i++ {
-		collections[i].ConCatImages()
-	}
-	helpers.RenderSuccessJSON(w, 200, collections)
+	accounts := []models.Account{}
+	h.DB.
+		Model(&models.Account{}).
+		Select("accounts.id AS id, title, content, accounts.created_at, images, likers, follwers").
+		Joins("LEFT JOIN collections ON accounts.id = collections.account_id").
+		Where("collections.user_id = ?", user.ID).
+		Find(&accounts)
+	helpers.RenderSuccessJSON(w, 200, accounts)
 }

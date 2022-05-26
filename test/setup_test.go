@@ -35,8 +35,8 @@ func setup() {
 		panic(err)
 	}
 
-	DB.Migrator().DropTable(&models.User{}, &models.Folder{}, &models.Note{}, &models.Collection{}, &models.Account{}, &models.Comment{})
-	DB.AutoMigrate(&models.User{}, &models.Folder{}, &models.Note{}, &models.Collection{}, &models.Account{}, &models.Comment{})
+	DB.Migrator().DropTable(&models.User{}, &models.Folder{}, &models.Note{}, &models.Collection{}, &models.Account{}, &models.Comment{}, &models.Liker{})
+	DB.AutoMigrate(&models.User{}, &models.Folder{}, &models.Note{}, &models.Collection{}, &models.Account{}, &models.Comment{}, &models.Liker{})
 
 	createdData()
 

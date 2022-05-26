@@ -24,9 +24,6 @@ func New(db *gorm.DB) Handler {
 func (h Handler) AccountList(w http.ResponseWriter, r *http.Request) {
 	accounts := []models.Account{}
 	h.DB.Order("likers desc, follwers desc").Find(&accounts)
-	for i := 0; i < len(accounts); i++ {
-		accounts[i].ConCatImages()
-	}
 	helpers.RenderSuccessJSON(w, 200, accounts)
 }
 
@@ -38,9 +35,6 @@ func (h Handler) AcccountPersonal(w http.ResponseWriter, r *http.Request) {
 	}
 	accounts := []models.Account{}
 	h.DB.Where("user_id = ?", user.ID).Find(&accounts)
-	for i := 0; i < len(accounts); i++ {
-		accounts[i].ConCatImages()
-	}
 	helpers.RenderSuccessJSON(w, 200, accounts)
 }
 
@@ -66,20 +60,26 @@ func (h Handler) CreateAccount(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h Handler) AccoutDetail(w http.ResponseWriter, r *http.Request) {
+	user, err := helpers.GetCurrentUser(r, h.DB)
 	id := chi.URLParam(r, "id")
 	accountID, _ := strconv.Atoi(id)
 	if !validate.ValidateGtInt(0, accountID) || !validate.ValidateStringEmpty(id) {
 		helpers.RenderFailureJSON(w, 400, errcode.GetMsg(errcode.ERROR_PARAMS))
 		return
 	}
-	account, comments, err := models.FindAccountDetail(h.DB, accountID)
+	userID := 0
+	if err == nil {
+		userID = user.ID
+	}
+	account, comments, likersFollwer, err := models.FindAccountDetail(h.DB, accountID, userID)
 	if err != nil {
 		helpers.RenderFailureJSON(w, 400, err.Error())
 		return
 	}
 	helpers.RenderSuccessJSON(w, 200, entries.AccountDetail{
-		Account:  account,
-		Comments: comments,
+		Account:      account,
+		Comments:     comments,
+		LikerFollwer: likersFollwer,
 	})
 }
 

@@ -20,7 +20,7 @@ func TestUserAuth(t *testing.T) {
 	setup()
 
 	testCases := []UserAuthTestCase{
-		{Email: "test1@qq.com", Password: "123456", ExpectedUser: `{"code":200,"data":{"token":"123123","email":"test1@qq.com","nick_name":"name","avatar":"/images/1.jpg","gender":0,"age":0,"signature":""},"message":null}`},
+		{Email: "test1@qq.com", Password: "123456", ExpectedUser: `{"code":200,"data":{"token":"123123","email":"test1@qq.com","nick_name":"name","avatar":"upload/avatar/images/1.jpg","gender":0,"age":0,"signature":""},"message":null}`},
 		{Email: "", Password: "123456", ExpectedError: "email or password is empty"},
 		{Email: "test2@qq.com", Password: "123123", ExpectedError: "email or password is error"},
 	}

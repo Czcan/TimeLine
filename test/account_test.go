@@ -34,6 +34,7 @@ func TestAccountList(t *testing.T) {
 }
 
 type AccountDetailTestCase struct {
+	Token           string
 	ID              string
 	ExpectedError   string
 	ExpectedReponse string
@@ -45,13 +46,15 @@ func TestAccountDetail(t *testing.T) {
 		INSERT INTO accounts (id, title, content, images, likers, follwers) VALUES (1, "Account_1", "Account_1", "1,2,3", 5, 6);
 		INSERT INTO comments (id, account_id, user_id, content) VALUES (1, 1, 1, "Comment_1");
 		INSERT INTO comments (id, account_id, user_id, content) VALUES (2, 1, 2, "Comment_2");
+		INSERT INTO likers (id, user_id, account_id, is_liked, is_follwer) VALUES (1, 1, 1, 1, 0);
 	`)
 	testCases := []AccountDetailTestCase{
 		{ID: "0", ExpectedError: `invalid param`},
-		{ID: "1", ExpectedReponse: `{"code":200,"data":{"account":{"id":1,"title":"Account_1","content":"Account_1","likers":5,"follwers":5,"created_at":0,"images":["/upload/accountimg/1/1.jpg","/upload/accountimg/1/2.jpg","/upload/accountimg/1/3.jpg"]},"comments":[{"nick_name":"name","content":"Comment_1","avatar_url":"/images/1.jpg","date":0},{"nick_name":"","content":"Comment_2","avatar_url":"/images/2.jpg","date":0}]},"message":null}`},
+		{Token: "123123", ID: "1", ExpectedReponse: `{"code":200,"data":{"account":{"id":1,"title":"Account_1","content":"Account_1","likers":5,"follwers":5,"created_at":0,"images":["/upload/accountimg/1/1.jpg","/upload/accountimg/1/2.jpg","/upload/accountimg/1/3.jpg"]},"comments":[{"nick_name":"name","content":"Comment_1","avatar_url":"upload/avatar/images/1.jpg","date":0},{"nick_name":"","content":"Comment_2","avatar_url":"upload/avatar/images/2.jpg","date":0}],"liker_follwer":{"is_liked":true,"is_follwer":false}},"message":null}`},
+		{ID: "1", ExpectedReponse: `{"code":200,"data":{"account":{"id":1,"title":"Account_1","content":"Account_1","likers":5,"follwers":5,"created_at":0,"images":["/upload/accountimg/1/1.jpg","/upload/accountimg/1/2.jpg","/upload/accountimg/1/3.jpg"]},"comments":[{"nick_name":"name","content":"Comment_1","avatar_url":"upload/avatar/images/1.jpg","date":0},{"nick_name":"","content":"Comment_2","avatar_url":"upload/avatar/images/2.jpg","date":0}],"liker_follwer":{"is_liked":false,"is_follwer":false}},"message":null}`},
 	}
 	for i, testCase := range testCases {
-		body := Get(fmt.Sprintf("/api/account/detail/%s", testCase.ID))
+		body := SingeGet(testCase.Token, fmt.Sprintf("/api/account/detail/%s", testCase.ID), nil)
 		if testCase.ExpectedError != "" && !strings.Contains(body, testCase.ExpectedError) {
 			t.Errorf(color.RedString("TestAccountDetail #%v: expected error %v but got %v", i+1, testCase.ExpectedError, body))
 		}
@@ -77,7 +80,7 @@ func TestDeletedAccount(t *testing.T) {
 		INSERT INTO accounts (id, user_id, title, content) VALUES (3, 1, "Account_1", "Account_1");
 	`)
 	testCases := []DeletedAccountTestCase{
-		{Token: "123123", ID: "1", ExpectedAccounts: `{"code":200,"data":[{"id":2,"user_id":1,"title":"Account_1","content":"Account_1","likers":0,"follwers":0,"created_at":0,"images":null},{"id":3,"user_id":1,"title":"Account_1","content":"Account_1","likers":0,"follwers":0,"created_at":0,"images":null}],"message":null}`},
+		{Token: "123123", ID: "1", ExpectedAccounts: `{"code":200,"data":[{"id":2,"user_id":1,"title":"Account_1","content":"Account_1","likers":0,"follwers":0,"created_at":0,"images":["/upload/accountimg/2/.jpg"]},{"id":3,"user_id":1,"title":"Account_1","content":"Account_1","likers":0,"follwers":0,"created_at":0,"images":["/upload/accountimg/3/.jpg"]}],"message":null}`},
 		{Token: "123456", ExpectedError: "invalid user"},
 		{Token: "123123", ID: "0", ExpectedError: "invalid params"},
 	}

@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/Czcan/TimeLine/app/accounts"
+	"github.com/Czcan/TimeLine/app/comments"
 	"github.com/Czcan/TimeLine/app/folder"
 	"github.com/Czcan/TimeLine/app/likers"
 	"github.com/Czcan/TimeLine/app/notes"
@@ -40,6 +41,7 @@ func New(db *gorm.DB, jwtClient jwt.JWTValidate) *chi.Mux {
 	accountHandler := accounts.New(db)
 	likerHandler := likers.New(db)
 	folderHandler := folder.New(db)
+	commentHandler := comments.New(db)
 
 	//user
 	r.Post("/api/auth", userHandler.Auth)
@@ -53,7 +55,7 @@ func New(db *gorm.DB, jwtClient jwt.JWTValidate) *chi.Mux {
 	r.Get("/api/account/detail/{id}", accountHandler.AccoutDetail)
 	r.Delete("/api/account/deleted", accountHandler.AccoutDelted)
 	r.Get("/api/account/person/list", accountHandler.AcccountPersonal)
-	
+
 	//upload
 	r.Post("/api/upload", uploadHandler.UploadImage)
 
@@ -71,6 +73,9 @@ func New(db *gorm.DB, jwtClient jwt.JWTValidate) *chi.Mux {
 	//liker
 	r.Get("/api/liker", likerHandler.Liker)
 	r.Get("/api/follwer", likerHandler.Follwer)
+
+	//comment
+	r.Post("/api/comment", commentHandler.Comment)
 
 	//staticFS
 	r.Get("/upload/*", StatisFS("/upload"))

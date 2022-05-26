@@ -18,6 +18,7 @@ type Comment struct {
 }
 
 type AccountDetail struct {
-	Account  *Account  `json:"account"`
-	Comments []Comment `json:"comments"`
+	Account      *Account      `json:"account"`
+	Comments     []Comment     `json:"comments"`
+	LikerFollwer *LikerFollwer `json:"liker_follwer"`
 }

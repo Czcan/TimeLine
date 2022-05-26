@@ -62,7 +62,7 @@ func FindOrCreateUser(db *gorm.DB, email string, pwd string) (*User, error) {
 }
 
 func (u *User) GetAvatarUrl() string {
-	return fmt.Sprintf("/images/%d.jpg", u.ID)
+	return fmt.Sprintf("upload/avatar/images/%d.jpg", u.ID)
 }
 
 func UpdateAndFindUser(db *gorm.DB, id int, key, value string) *User {
@@ -71,4 +71,12 @@ func UpdateAndFindUser(db *gorm.DB, id int, key, value string) *User {
 	user := &User{}
 	db.Where("id = ?", id).First(&user)
 	return user
+}
+
+func SaveCollection(db *gorm.DB, userID int, accountID int) error {
+	collection := &Collection{UserID: userID, AccountID: accountID}
+	if err := db.Save(&collection).Error; err != nil {
+		return err
+	}
+	return nil
 }
