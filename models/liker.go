@@ -46,8 +46,8 @@ func UpdateLiker(db *gorm.DB, userID int, accountID int, status bool) (int, erro
 		} else {
 			likers = account.Likers - 1
 		}
-		db.Exec("UPDATE accounts SET likers = ? WHERE id = ?", likers, accountID)
 		db.Exec("UPDATE likers SET is_liked = ? WHERE user_id = ? AND account_id = ?", status, userID, accountID)
+		db.Exec("UPDATE accounts SET likers = ? WHERE id = ?", likers, accountID)
 	}
 	return likers, nil
 }
@@ -84,8 +84,8 @@ func UpdateFollwerAndSyncCollection(db *gorm.DB, accountID, userID int, status b
 		follwers = account.Follwers - 1
 	}
 	err := database.Transaction(db, func(tx *gorm.DB) error {
-		tx.Exec("UPDATE accounts SET follwers = ? WHERE id = ?", follwers, accountID)
 		tx.Exec("UPDATE likers SET is_follwer = ? WHERE user_id = ? AND account_id = ?", status, userID, accountID)
+		tx.Exec("UPDATE accounts SET follwers = ? WHERE id = ?", follwers, accountID)
 		if err := SaveCollection(tx, userID, accountID); err != nil {
 			return err
 		}

@@ -23,7 +23,11 @@ func New(db *gorm.DB) Handler {
 
 func (h Handler) AccountList(w http.ResponseWriter, r *http.Request) {
 	accounts := []models.Account{}
-	h.DB.Order("likers desc, follwers desc").Find(&accounts)
+	h.DB.Model(&models.Account{}).
+		Select("accounts.id, title, content, accounts.created_at, likers, follwers, images, users.nick_name, CONCAT('upload/avatar/images/', users.id, '.jpg') AS avatar_url").
+		Joins("LEFT JOIN users ON accounts.user_id = users.id").
+		Order("likers desc, follwers desc").
+		Find(&accounts)
 	helpers.RenderSuccessJSON(w, 200, accounts)
 }
 

@@ -26,6 +26,8 @@ type Account struct {
 	UpdatedAt  int            `json:"-"`
 	DeletedAt  gorm.DeletedAt `json:"-"`
 	ImageSlice []string       `json:"images" gorm:"-"`
+	NickName   string         `json:"nick_name"`
+	AvatarUrl  string         `json:"avatar_url"`
 }
 
 func (a *Account) AfterFind(tx *gorm.DB) (err error) {
@@ -42,7 +44,11 @@ func FindAccountDetail(db *gorm.DB, accountID int, userID int) (*entries.Account
 		account      = &Account{}
 		LikerFollwer = &entries.LikerFollwer{}
 	)
-	if err := db.Where("id = ?", accountID).First(&account).Error; err != nil {
+	if err := db.Model(&Account{}).
+		Select("accounts.id, title, content, accounts.created_at, likers, follwers, images, users.nick_name, CONCAT('upload/avatar/images/', users.id, '.jpg') AS avatar_url").
+		Joins("LEFT JOIN users ON accounts.user_id = users.id").
+		Where("accounts.id = ?", accountID).
+		First(&account).Error; err != nil {
 		return nil, nil, nil, err
 	}
 	comments := FindComments(db, accountID)
