@@ -1,8 +1,6 @@
 package models
 
 import (
-	"time"
-
 	"github.com/Czcan/TimeLine/app/entries"
 	"gorm.io/gorm"
 )
@@ -12,8 +10,8 @@ type Comment struct {
 	AccountID int
 	UserID    int
 	Content   string
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	CreatedAt int
+	UpdatedAt int
 }
 
 func SaveComment(db *gorm.DB, userID int, accountID int, content string) error {

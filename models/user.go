@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/Czcan/TimeLine/app/entries"
 	"github.com/Czcan/TimeLine/utils"
 	"github.com/iancoleman/strcase"
 	"gorm.io/gorm"
@@ -24,29 +25,27 @@ type User struct {
 	UpdatedAt time.Time
 }
 
-type Collection struct {
-	ID        int
-	UserID    int
-	AccountID int
-	CreatedAt time.Time
+func (u *User) GetAvatarUrl() string {
+	return fmt.Sprintf("upload/avatar/images/%d.jpg", u.ID)
 }
 
-func FindUser(db *gorm.DB, email string, pwd string) (*User, error) {
+func FindUser(db *gorm.DB, email string, pwd string) (*entries.Auth, string, error) {
 	user := &User{}
 	if err := db.Where("email = ? AND password = ?", email, pwd).First(&user).Error; err != nil {
-		return nil, err
+		return nil, "", err
 	}
 	if user.NickName == "" {
 		user.NickName = fmt.Sprintf("用户%s", utils.GenerateNumber(11, "0123456789"))
 	}
 	db.Save(&user)
-	return user, nil
+	auth := NewEntryAuth(user)
+	return auth, user.Uid, nil
 }
 
-func FindOrCreateUser(db *gorm.DB, email string, pwd string) (*User, error) {
+func FindOrCreateUser(db *gorm.DB, email string, pwd string) error {
 	user := &User{}
 	if err := db.Where("email = ? AND password = ?", email, pwd).First(&user).Error; err == nil {
-		return nil, errors.New("账号已存在")
+		return errors.New("账号已存在")
 	}
 	name := fmt.Sprintf("用户%s", utils.GenerateNumber(11, "0123456789"))
 	user = &User{
@@ -56,27 +55,27 @@ func FindOrCreateUser(db *gorm.DB, email string, pwd string) (*User, error) {
 		NickName: name,
 	}
 	if err := db.Save(&user).Error; err != nil {
-		return nil, err
+		return err
 	}
-	return user, nil
+	return nil
 }
 
-func (u *User) GetAvatarUrl() string {
-	return fmt.Sprintf("upload/avatar/images/%d.jpg", u.ID)
-}
-
-func UpdateAndFindUser(db *gorm.DB, id int, key, value string) *User {
+func UpdateAndFindUser(db *gorm.DB, id int, key, value string) *entries.Auth {
 	updateSQL := fmt.Sprintf("UPDATE users SET %v = ? WHERE id = ?", strcase.ToSnake(key))
 	db.Exec(updateSQL, value, id)
 	user := &User{}
 	db.Where("id = ?", id).First(&user)
-	return user
+	auth := NewEntryAuth(user)
+	return auth
 }
 
-func SaveCollection(db *gorm.DB, userID int, accountID int) error {
-	collection := &Collection{UserID: userID, AccountID: accountID}
-	if err := db.Save(&collection).Error; err != nil {
-		return err
+func NewEntryAuth(user *User) *entries.Auth {
+	return &entries.Auth{
+		Email:     user.Email,
+		NickName:  user.NickName,
+		Gender:    user.Gender,
+		Avatar:    user.GetAvatarUrl(),
+		Age:       user.Age,
+		Signature: user.Signature,
 	}
-	return nil
 }

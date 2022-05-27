@@ -8,6 +8,8 @@ type Account struct {
 	Follwers   int      `json:"follwers"`
 	CreatedAt  int      `json:"created_at"`
 	ImageSlice []string `json:"images"`
+	NickName   string   `json:"nick_name"`
+	AvatarUrl  string   `json:"avatar_url"`
 }
 
 type Comment struct {

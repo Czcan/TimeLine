@@ -14,6 +14,15 @@ type Folder struct {
 	DeletedAt gorm.DeletedAt `json:"-"`
 }
 
+func CreateFolder(db *gorm.DB, userID int, name string) ([]Folder, error) {
+	folder := &Folder{Name: name, UserID: userID}
+	if err := db.Save(&folder).Error; err != nil {
+		return nil, err
+	}
+	folders := GetFolderList(db, userID)
+	return folders, nil
+}
+
 func GetFolderList(db *gorm.DB, userID int) []Folder {
 	folders := []Folder{}
 	db.Where("user_id = ? AND deleted_at is null", userID).Find(&folders)

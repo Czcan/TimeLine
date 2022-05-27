@@ -84,10 +84,10 @@ type UpdateUserTestCase struct {
 func TestUpdateUser(t *testing.T) {
 	setup()
 	testCases := []UpdateUserTestCase{
-		{Token: "123123", Key: "NickName", Value: "nick_name", ExpectedUser: `{"code":200,"data":{"token":"123123","email":"test1@qq.com","nick_name":"nick_name","avatar":"","gender":0,"age":0,"signature":""},"message":null}`},
+		{Token: "123123", Key: "NickName", Value: "nick_name", ExpectedUser: `{"code":200,"data":{"token":"","email":"test1@qq.com","nick_name":"nick_name","avatar":"upload/avatar/images/1.jpg","gender":0,"age":0,"signature":""},"message":null}`},
 		{Token: "123456", ExpectedError: "invalid user"},
 		{Token: "123123", Key: "", Value: "invalid params", ExpectedError: "invalid params"},
-		{Token: "123123", Key: "Age", Value: "18", ExpectedUser: `{"code":200,"data":{"token":"123123","email":"test1@qq.com","nick_name":"nick_name","avatar":"","gender":0,"age":18,"signature":""},"message":null}`},
+		{Token: "123123", Key: "Age", Value: "18", ExpectedUser: `{"code":200,"data":{"token":"","email":"test1@qq.com","nick_name":"nick_name","avatar":"upload/avatar/images/1.jpg","gender":0,"age":18,"signature":""},"message":null}`},
 	}
 	for i, testCase := range testCases {
 		body := SingePost(testCase.Token, "/api/user/update", url.Values{
@@ -116,12 +116,12 @@ func TestUserCollection(t *testing.T) {
 		INSERT INTO collections (id, user_id, account_id) VALUES (1, 1, 1);
 		INSERT INTO collections (id, user_id, account_id) VALUES (2, 1, 2);
 		INSERT INTO collections (id, user_id, account_id) VALUES (3, 2, 1);
-		INSERT INTO accounts (id, title, content, images, likers, follwers) VALUES (1, "Account_1", "Account_1", "1,2,3", 5, 6);
-		INSERT INTO accounts (id, title, content, images, likers, follwers) VALUES (2, "Account_2", "Account_2", "1,2", 10, 6);
-		INSERT INTO accounts (id, title, content, images, likers, follwers) VALUES (3, "Account_3", "Account_3", "1", 11, 6);
+		INSERT INTO accounts (id, title, user_id, content, images, likers, follwers) VALUES (1, "Account_1", 1, "Account_1", "1,2,3", 5, 6);
+		INSERT INTO accounts (id, title, user_id, content, images, likers, follwers) VALUES (2, "Account_2", 1, "Account_2", "1,2", 10, 6);
+		INSERT INTO accounts (id, title, user_id, content, images, likers, follwers) VALUES (3, "Account_3", 1, "Account_3", "1", 11, 6);
 	`)
 	testCases := []UserCollectionTestCase{
-		{Token: "123123", ExpectedReponse: `{"code":200,"data":[{"id":1,"user_id":0,"title":"Account_1","content":"Account_1","likers":5,"follwers":6,"created_at":0,"images":["/upload/accountimg/1/1.jpg","/upload/accountimg/1/2.jpg","/upload/accountimg/1/3.jpg"]},{"id":2,"user_id":0,"title":"Account_2","content":"Account_2","likers":10,"follwers":6,"created_at":0,"images":["/upload/accountimg/2/1.jpg","/upload/accountimg/2/2.jpg"]}],"message":null}`},
+		{Token: "123123", ExpectedReponse: `{"code":200,"data":[{"id":1,"user_id":0,"title":"Account_1","content":"Account_1","likers":5,"follwers":6,"created_at":0,"images":["/upload/accountimg/1/1.jpg","/upload/accountimg/1/2.jpg","/upload/accountimg/1/3.jpg"],"nick_name":"name","avatar_url":"upload/avatar/images/1.jpg"},{"id":2,"user_id":0,"title":"Account_2","content":"Account_2","likers":10,"follwers":6,"created_at":0,"images":["/upload/accountimg/2/1.jpg","/upload/accountimg/2/2.jpg"],"nick_name":"name","avatar_url":"upload/avatar/images/1.jpg"}],"message":null}`},
 		{Token: "123456", ExpectedError: "invalid user"},
 	}
 	for i, testCase := range testCases {

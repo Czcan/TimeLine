@@ -29,13 +29,12 @@ func (h Handler) Create(w http.ResponseWriter, r *http.Request) {
 		helpers.RenderFailureJSON(w, 400, errcode.GetMsg(errcode.ERROR_PARAMS))
 		return
 	}
-	folder := &models.Folder{Name: name, UserID: user.ID}
-	if err := h.DB.Save(&folder).Error; err != nil {
+	folder, err := models.CreateFolder(h.DB, user.ID, name)
+	if err != nil {
 		helpers.RenderFailureJSON(w, 400, err.Error())
 		return
 	}
-	folders := models.GetFolderList(h.DB, user.ID)
-	helpers.RenderSuccessJSON(w, 200, folders)
+	helpers.RenderSuccessJSON(w, 200, folder)
 }
 
 func (h Handler) List(w http.ResponseWriter, r *http.Request) {

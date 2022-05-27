@@ -20,7 +20,7 @@ func TestComment(t *testing.T) {
 	setup()
 
 	testCases := []CommentTestCase{
-		{Token: "123123", ID: "1", Content: "Comment_1", ExpectedComments: `{"code":200,"data":[{"nick_name":"name","content":"Comment_1","avatar_url":"","date":0}],"message":null}`},
+		{Token: "123123", ID: "1", Content: "Comment_1", ExpectedComments: `{"code":200,"data":[{"nick_name":"name","content":"Comment_1","avatar_url":"upload/avatar/images/1.jpg","date":0}],"message":null}`},
 		{Token: "123456", ExpectedError: `invalid user`},
 		{Token: "123123", ID: "0", ExpectedError: "invalid params"},
 	}
@@ -32,6 +32,7 @@ func TestComment(t *testing.T) {
 		if testCase.ExpectedError != "" && !strings.Contains(body, testCase.ExpectedError) {
 			t.Errorf(color.RedString("TestComment #%v: expected error %v but got %v", i+1, testCase.ExpectedError, body))
 		}
+		body = ExtractDate(body, "data.#.date", "0")
 		if testCase.ExpectedComments != "" && body != testCase.ExpectedComments {
 			t.Errorf(color.RedString("TestComment #%v: expected comments %v but got %v", i+1, testCase.ExpectedComments, body))
 		}

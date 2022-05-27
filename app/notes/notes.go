@@ -30,12 +30,11 @@ func (h Handler) Create(w http.ResponseWriter, r *http.Request) {
 		helpers.RenderFailureJSON(w, 400, errcode.GetMsg(errcode.ERROR_PARAMS))
 		return
 	}
-	note := &models.Note{FolderID: folderID, Content: content, UserID: user.ID}
-	if err := h.DB.Save(&note).Error; err != nil {
+	notes, err := models.CreateNote(h.DB, folderID, user.ID, content)
+	if err != nil {
 		helpers.RenderFailureJSON(w, 400, err.Error())
 		return
 	}
-	notes := models.GetNoteList(h.DB, folderID, user.ID)
 	helpers.RenderSuccessJSON(w, 200, notes)
 }
 
@@ -66,7 +65,11 @@ func (h Handler) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	status := helpers.GetParamsBool(r, "status")
-	h.DB.Model(&models.Note{}).Where("id = ? AND user_id = ?", noteID, user.ID).Update("status", status)
+	err = models.UpdateNoteStatus(h.DB, noteID, user.ID, status)
+	if err != nil {
+		helpers.RenderFailureJSON(w, 200, err.Error())
+		return
+	}
 	helpers.RenderSuccessJSON(w, 200, "updated successed")
 }
 
@@ -82,7 +85,10 @@ func (h Handler) Deleted(w http.ResponseWriter, r *http.Request) {
 		helpers.RenderFailureJSON(w, 400, errcode.GetMsg(errcode.ERROR_PARAMS))
 		return
 	}
-	h.DB.Where("id = ?", noteID).Delete(&models.Note{})
-	notes := models.GetNoteList(h.DB, user.ID, folderID)
+	notes, err := models.DeleteNote(h.DB, noteID, user.ID, folderID)
+	if err != nil {
+		helpers.RenderFailureJSON(w, 400, err.Error())
+		return
+	}
 	helpers.RenderSuccessJSON(w, 200, notes)
 }

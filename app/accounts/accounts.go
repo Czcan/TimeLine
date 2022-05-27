@@ -22,12 +22,7 @@ func New(db *gorm.DB) Handler {
 }
 
 func (h Handler) AccountList(w http.ResponseWriter, r *http.Request) {
-	accounts := []models.Account{}
-	h.DB.Model(&models.Account{}).
-		Select("accounts.id, title, content, accounts.created_at, likers, follwers, images, users.nick_name, CONCAT('upload/avatar/images/', users.id, '.jpg') AS avatar_url").
-		Joins("LEFT JOIN users ON accounts.user_id = users.id").
-		Order("likers desc, follwers desc").
-		Find(&accounts)
+	accounts := models.AcoountList(h.DB)
 	helpers.RenderSuccessJSON(w, 200, accounts)
 }
 
@@ -37,8 +32,7 @@ func (h Handler) AcccountPersonal(w http.ResponseWriter, r *http.Request) {
 		helpers.RenderFailureJSON(w, 400, errcode.GetMsg(errcode.ERROR_TOKEN))
 		return
 	}
-	accounts := []models.Account{}
-	h.DB.Where("user_id = ?", user.ID).Find(&accounts)
+	accounts := models.PersonAccount(h.DB, user.ID)
 	helpers.RenderSuccessJSON(w, 200, accounts)
 }
 
@@ -98,8 +92,10 @@ func (h Handler) AccoutDelted(w http.ResponseWriter, r *http.Request) {
 		helpers.RenderFailureJSON(w, 400, errcode.GetMsg(errcode.ERROR_PARAMS))
 		return
 	}
-	h.DB.Where("id = ?", id).Delete(&models.Account{})
-	accounts := []models.Account{}
-	h.DB.Where("user_id = ?", user.ID).Find(&accounts)
+	accounts, err := models.DeleteAccount(h.DB, id, user.ID)
+	if err != nil {
+		helpers.RenderFailureJSON(w, 400, err.Error())
+		return
+	}
 	helpers.RenderSuccessJSON(w, 200, accounts)
 }

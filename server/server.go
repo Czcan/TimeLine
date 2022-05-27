@@ -16,7 +16,6 @@ import (
 	"github.com/Czcan/TimeLine/app/users"
 	"github.com/Czcan/TimeLine/middlewares"
 	"github.com/Czcan/TimeLine/utils/jwt"
-	"github.com/Czcan/TimeLine/utils/logger"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
 	"gorm.io/gorm"
@@ -28,7 +27,7 @@ func New(db *gorm.DB, jwtClient jwt.JWTValidate) *chi.Mux {
 	r.Use(middleware.Recoverer)
 	r.Use(middleware.URLFormat)
 	r.Use(middlewares.JwtAuthentication(jwtClient))
-	r.Use(logger.Logger(logger.Option{
+	r.Use(middlewares.Logger(middlewares.Option{
 		ServiceName: "TimeLine",
 		FormattedTime: func(t time.Time) string {
 			return t.In(time.FixedZone("local", 8*60*60)).Format("2006-01-02 15:04:05")

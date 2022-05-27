@@ -50,8 +50,8 @@ func TestAccountDetail(t *testing.T) {
 	`)
 	testCases := []AccountDetailTestCase{
 		{ID: "0", ExpectedError: `invalid param`},
-		{Token: "123123", ID: "1", ExpectedReponse: `{"code":200,"data":{"account":{"id":1,"title":"Account_1","content":"Account_1","likers":5,"follwers":5,"created_at":0,"images":["/upload/accountimg/1/1.jpg","/upload/accountimg/1/2.jpg","/upload/accountimg/1/3.jpg"],"nick_name":"","avatar_url":""},"comments":[{"nick_name":"name","content":"Comment_1","avatar_url":"upload/avatar/images/1.jpg","date":0},{"nick_name":"","content":"Comment_2","avatar_url":"upload/avatar/images/2.jpg","date":0}],"liker_follwer":{"is_liked":true,"is_follwer":false}},"message":null}`},
-		{ID: "1", ExpectedReponse: `{"code":200,"data":{"account":{"id":1,"title":"Account_1","content":"Account_1","likers":5,"follwers":5,"created_at":0,"images":["/upload/accountimg/1/1.jpg","/upload/accountimg/1/2.jpg","/upload/accountimg/1/3.jpg"],"nick_name":"","avatar_url":""},"comments":[{"nick_name":"name","content":"Comment_1","avatar_url":"upload/avatar/images/1.jpg","date":0},{"nick_name":"","content":"Comment_2","avatar_url":"upload/avatar/images/2.jpg","date":0}],"liker_follwer":{"is_liked":false,"is_follwer":false}},"message":null}`},
+		{Token: "123123", ID: "1", ExpectedReponse: `{"code":200,"data":{"account":{"id":1,"title":"Account_1","content":"Account_1","likers":5,"follwers":5,"created_at":0,"images":["/upload/accountimg/1/1.jpg","/upload/accountimg/1/2.jpg","/upload/accountimg/1/3.jpg"],"nick_name":"name","avatar_url":"upload/avatar/images/1.jpg"},"comments":[{"nick_name":"name","content":"Comment_1","avatar_url":"upload/avatar/images/1.jpg","date":0},{"nick_name":"","content":"Comment_2","avatar_url":"upload/avatar/images/2.jpg","date":0}],"liker_follwer":{"is_liked":true,"is_follwer":false}},"message":null}`},
+		{ID: "1", ExpectedReponse: `{"code":200,"data":{"account":{"id":1,"title":"Account_1","content":"Account_1","likers":5,"follwers":5,"created_at":0,"images":["/upload/accountimg/1/1.jpg","/upload/accountimg/1/2.jpg","/upload/accountimg/1/3.jpg"],"nick_name":"name","avatar_url":"upload/avatar/images/1.jpg"},"comments":[{"nick_name":"name","content":"Comment_1","avatar_url":"upload/avatar/images/1.jpg","date":0},{"nick_name":"","content":"Comment_2","avatar_url":"upload/avatar/images/2.jpg","date":0}],"liker_follwer":{"is_liked":false,"is_follwer":false}},"message":null}`},
 	}
 	for i, testCase := range testCases {
 		body := SingeGet(testCase.Token, fmt.Sprintf("/api/account/detail/%s", testCase.ID), nil)
@@ -80,7 +80,7 @@ func TestDeletedAccount(t *testing.T) {
 		INSERT INTO accounts (id, user_id, title, content) VALUES (3, 1, "Account_1", "Account_1");
 	`)
 	testCases := []DeletedAccountTestCase{
-		{Token: "123123", ID: "1", ExpectedAccounts: `{"code":200,"data":[{"id":2,"user_id":1,"title":"Account_1","content":"Account_1","likers":0,"follwers":0,"created_at":0,"images":["/upload/accountimg/2/.jpg"]},{"id":3,"user_id":1,"title":"Account_1","content":"Account_1","likers":0,"follwers":0,"created_at":0,"images":["/upload/accountimg/3/.jpg"]}],"message":null}`},
+		{Token: "123123", ID: "1", ExpectedAccounts: `{"code":200,"data":[{"id":2,"user_id":1,"title":"Account_1","content":"Account_1","likers":0,"follwers":0,"created_at":0,"images":["/upload/accountimg/2/.jpg"],"nick_name":"","avatar_url":""},{"id":3,"user_id":1,"title":"Account_1","content":"Account_1","likers":0,"follwers":0,"created_at":0,"images":["/upload/accountimg/3/.jpg"],"nick_name":"","avatar_url":""}],"message":null}`},
 		{Token: "123456", ExpectedError: "invalid user"},
 		{Token: "123123", ID: "0", ExpectedError: "invalid params"},
 	}
@@ -112,7 +112,7 @@ func TestAccountPersonList(t *testing.T) {
 		INSERT INTO accounts (id, user_id, title, content, images, likers, follwers) VALUES (3, 2, "Account_3", "Account_3", "1", 11, 6);
 	`)
 	testCases := []AccountPersonTestCase{
-		{Token: "123123", ExpectedResponse: `{"code":200,"data":[{"id":1,"user_id":1,"title":"Account_1","content":"Account_1","likers":5,"follwers":6,"created_at":0,"images":["/upload/accountimg/1/1.jpg","/upload/accountimg/1/2.jpg","/upload/accountimg/1/3.jpg"]},{"id":2,"user_id":1,"title":"Account_2","content":"Account_2","likers":10,"follwers":6,"created_at":0,"images":["/upload/accountimg/2/1.jpg","/upload/accountimg/2/2.jpg"]}],"message":null}`},
+		{Token: "123123", ExpectedResponse: `{"code":200,"data":[{"id":1,"user_id":1,"title":"Account_1","content":"Account_1","likers":5,"follwers":6,"created_at":0,"images":["/upload/accountimg/1/1.jpg","/upload/accountimg/1/2.jpg","/upload/accountimg/1/3.jpg"],"nick_name":"","avatar_url":""},{"id":2,"user_id":1,"title":"Account_2","content":"Account_2","likers":10,"follwers":6,"created_at":0,"images":["/upload/accountimg/2/1.jpg","/upload/accountimg/2/2.jpg"],"nick_name":"","avatar_url":""}],"message":null}`},
 		{Token: "123456", ExpectedError: "invalid user"},
 	}
 	for i, testCase := range testCases {

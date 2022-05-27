@@ -30,6 +30,7 @@ type Account struct {
 	AvatarUrl  string         `json:"avatar_url"`
 }
 
+//hook-find
 func (a *Account) AfterFind(tx *gorm.DB) (err error) {
 	for _, imageID := range strings.Split(a.Images, ",") {
 		imageID = strings.TrimSpace(imageID)
@@ -37,6 +38,16 @@ func (a *Account) AfterFind(tx *gorm.DB) (err error) {
 		a.ImageSlice = append(a.ImageSlice, image)
 	}
 	return nil
+}
+
+func AcoountList(db *gorm.DB) []Account {
+	accounts := []Account{}
+	db.Model(&Account{}).
+		Select("accounts.id, title, content, accounts.created_at, likers, follwers, images, users.nick_name, CONCAT('upload/avatar/images/', users.id, '.jpg') AS avatar_url").
+		Joins("LEFT JOIN users ON accounts.user_id = users.id").
+		Order("likers desc, follwers desc").
+		Find(&accounts)
+	return accounts
 }
 
 func FindAccountDetail(db *gorm.DB, accountID int, userID int) (*entries.Account, []entries.Comment, *entries.LikerFollwer, error) {
@@ -60,6 +71,8 @@ func FindAccountDetail(db *gorm.DB, accountID int, userID int) (*entries.Account
 		Follwers:   account.Likers,
 		CreatedAt:  account.CreatedAt,
 		ImageSlice: account.ImageSlice,
+		NickName:   account.NickName,
+		AvatarUrl:  account.AvatarUrl,
 	}
 	if userID > 0 {
 		db.Raw("SELECT is_liked, is_follwer FROM likers WHERE user_id = ? AND account_id = ?", userID, accountID).Scan(&LikerFollwer)
@@ -103,4 +116,17 @@ func CreatedAccount(db *gorm.DB, userID int, content, title string, files []*mul
 		images = append(images, strconv.Itoa(i+1))
 	}
 	return nil
+}
+
+func PersonAccount(db *gorm.DB, id int) []Account {
+	accounts := []Account{}
+	db.Where("user_id = ?", id).Find(&accounts)
+	return accounts
+}
+
+func DeleteAccount(db *gorm.DB, id, userID int) ([]Account, error) {
+	if err := db.Where("id = ?", id).Delete(&Account{}).Error; err != nil {
+		return nil, err
+	}
+	return PersonAccount(db, userID), nil
 }

@@ -3,7 +3,6 @@ package users
 import (
 	"net/http"
 
-	"github.com/Czcan/TimeLine/app/entries"
 	"github.com/Czcan/TimeLine/app/helpers"
 	"github.com/Czcan/TimeLine/models"
 	"github.com/Czcan/TimeLine/utils/errcode"
@@ -27,32 +26,22 @@ func New(db *gorm.DB, client jwt.JWTValidate) Handler {
 func (h Handler) Auth(w http.ResponseWriter, r *http.Request) {
 	email := r.FormValue("email")
 	pwd := r.FormValue("password")
-
 	if !validate.ValidateEmail(email) || !validate.ValidateStringEmpty(pwd) {
 		helpers.RenderFailureJSON(w, 400, "email or password is empty")
 		return
 	}
-
-	user, err := models.FindUser(h.DB, email, pwd)
+	user, uid, err := models.FindUser(h.DB, email, pwd)
 	if err != nil {
 		helpers.RenderFailureJSON(w, 400, "email or password is error")
 		return
 	}
-
-	token, err := h.JWTClient.GetToken(user.Uid)
+	token, err := h.JWTClient.GetToken(uid)
 	if err != nil {
 		helpers.RenderFailureJSON(w, 400, err.Error())
 		return
 	}
-	helpers.RenderSuccessJSON(w, 200, entries.Auth{
-		Token:     token,
-		Email:     user.Email,
-		NickName:  user.NickName,
-		Gender:    user.Gender,
-		Avatar:    user.GetAvatarUrl(),
-		Age:       user.Age,
-		Signature: user.Signature,
-	})
+	user.Token = token
+	helpers.RenderSuccessJSON(w, 200, user)
 }
 
 func (h Handler) Register(w http.ResponseWriter, r *http.Request) {
@@ -67,7 +56,7 @@ func (h Handler) Register(w http.ResponseWriter, r *http.Request) {
 		helpers.RenderFailureJSON(w, 400, "incorrect password")
 		return
 	}
-	_, err := models.FindOrCreateUser(h.DB, email, password)
+	err := models.FindOrCreateUser(h.DB, email, password)
 	if err != nil {
 		helpers.RenderFailureJSON(w, 400, "用户已存在")
 		return
@@ -87,16 +76,8 @@ func (h Handler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 		helpers.RenderFailureJSON(w, 400, errcode.GetMsg(errcode.ERROR_PARAMS))
 		return
 	}
-	user = models.UpdateAndFindUser(h.DB, user.ID, key, value)
-	helpers.RenderSuccessJSON(w, 200, entries.Auth{
-		Token:     user.Uid,
-		Email:     user.Email,
-		NickName:  user.NickName,
-		Gender:    user.Gender,
-		Avatar:    user.Avatar,
-		Age:       user.Age,
-		Signature: user.Signature,
-	})
+	auth := models.UpdateAndFindUser(h.DB, user.ID, key, value)
+	helpers.RenderSuccessJSON(w, 200, auth)
 }
 
 func (h Handler) Collection(w http.ResponseWriter, r *http.Request) {
@@ -105,12 +86,6 @@ func (h Handler) Collection(w http.ResponseWriter, r *http.Request) {
 		helpers.RenderFailureJSON(w, 400, errcode.GetMsg(errcode.ERROR_TOKEN))
 		return
 	}
-	accounts := []models.Account{}
-	h.DB.
-		Model(&models.Account{}).
-		Select("accounts.id AS id, title, content, accounts.created_at, images, likers, follwers").
-		Joins("LEFT JOIN collections ON accounts.id = collections.account_id").
-		Where("collections.user_id = ?", user.ID).
-		Find(&accounts)
+	accounts := models.FindCollection(h.DB, user.ID)
 	helpers.RenderSuccessJSON(w, 200, accounts)
 }
