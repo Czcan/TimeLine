@@ -32,3 +32,10 @@ func SaveCollection(db *gorm.DB, userID int, accountID int) error {
 	}
 	return nil
 }
+
+func DeleteCollection(db *gorm.DB, userID int, accountID int) error {
+	if err := db.Where("user_id = ? AND account_id = ?", userID, accountID).Delete(&Collection{}).Error; err != nil {
+		return err
+	}
+	return nil
+}

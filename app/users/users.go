@@ -89,3 +89,7 @@ func (h Handler) Collection(w http.ResponseWriter, r *http.Request) {
 	accounts := models.FindCollection(h.DB, user.ID)
 	helpers.RenderSuccessJSON(w, 200, accounts)
 }
+
+func (h Handler) DeleteCollection(w http.ResponseWriter, r *http.Request) {
+	
+}

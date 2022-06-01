@@ -59,12 +59,17 @@ func TestFollwer(t *testing.T) {
 	setup()
 	RunSQL(DB, `
 		INSERT INTO accounts (id, title, content, images, likers, follwers) VALUES (1, "Account_1", "Account_1", "1,2,3", 5, 6);
+		INSERT INTO accounts (id, title, content, images, likers, follwers) VALUES (2, "Account_2", "Account_2", "1,2,3", 5, 6);
+		INSERT INTO collections (id, user_id, account_id) VALUES (1, 1, 2);
+		INSERT INTO collections (id, user_id, account_id) VALUES (2, 1, 3);
+		INSERT INTO likers (id, user_id, account_id, is_follwer) VALUES (1, 1, 2, 1);
 	`)
 	testCases := []FollwerTestCase{
 		{Token: "123456", ExpectedError: `invalid user`},
 		{Token: "123123", ID: "0", ExpectedError: `invalid params`},
-		{Token: "123123", ID: "1", Follwer: "1", ExpectedResponse: `{"code":200,"data":7,"message":null}`, ExpectedAccount: `1,Account_1,Account_1,1,2,3,5,7`, ExpectedCollection: `1,1,1`, ExpectedLiker: `1,1,1,1`},
+		{Token: "123123", ID: "1", Follwer: "1", ExpectedResponse: `{"code":200,"data":7,"message":null}`, ExpectedAccount: `1,Account_1,Account_1,1,2,3,5,7`, ExpectedCollection: `1,1,2; 2,1,3; 3,1,1`, ExpectedLiker: `1,1,2,1; 2,1,1,1`},
 		{Token: "123123", ID: "1", Follwer: "1", ExpectedError: `{"code":400,"data":null,"message":"invalid operation"}`},
+		{Token: "123123", ID: "2", Follwer: "0", ExpectedAccount: `2,Account_2,Account_2,1,2,3,5,5`, ExpectedCollection: `2,1,3; 3,1,1`, ExpectedLiker: `1,1,2,0; 2,1,1,1`},
 	}
 	for i, testCase := range testCases {
 		body := SingeGet(testCase.Token, "/api/follwer", url.Values{
@@ -77,7 +82,10 @@ func TestFollwer(t *testing.T) {
 		if testCase.ExpectedResponse != "" && body != testCase.ExpectedResponse {
 			t.Errorf(color.RedString("TestFollwer #%v: expected response %v but got %v", i+1, testCase.ExpectedResponse, body))
 		}
-		account := GetRecords(DB, "accounts", "id, title, content, images, likers, follwers", "where id = 1")
+		account := ""
+		if testCase.ID != "0" {
+			account = GetRecords(DB, "accounts", "id, title, content, images, likers, follwers", fmt.Sprintf("where id = %s", testCase.ID))
+		}
 		if testCase.ExpectedAccount != "" && account != testCase.ExpectedAccount {
 			t.Errorf(color.RedString("TestFollwer #%v: expected account %v but got %v", i+1, testCase.ExpectedAccount, account))
 		}

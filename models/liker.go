@@ -10,8 +10,8 @@ import (
 
 type Liker struct {
 	ID        int
-	UserID    int  `gorm:"unique:idx_liker"`
-	AccountID int  `gorm:"unique:idx_liker"`
+	UserID    int  `gorm:"index:idx_liker"`
+	AccountID int  `gorm:"index:idx_liker"`
 	IsLiked   bool `gorm:"null"`
 	IsFollwer bool `gorm:"null"`
 	CreatedAt time.Time
@@ -86,8 +86,14 @@ func UpdateFollwerAndSyncCollection(db *gorm.DB, accountID, userID int, status b
 	err := database.Transaction(db, func(tx *gorm.DB) error {
 		tx.Exec("UPDATE likers SET is_follwer = ? WHERE user_id = ? AND account_id = ?", status, userID, accountID)
 		tx.Exec("UPDATE accounts SET follwers = ? WHERE id = ?", follwers, accountID)
-		if err := SaveCollection(tx, userID, accountID); err != nil {
-			return err
+		if status {
+			if err := SaveCollection(tx, userID, accountID); err != nil {
+				return err
+			}
+		} else {
+			if err := DeleteCollection(tx, userID, accountID); err != nil {
+				return err
+			}
 		}
 		return nil
 	})
