@@ -4,7 +4,7 @@ import (
 	"errors"
 	"time"
 
-	"github.com/Czcan/TimeLine/utils/jwt"
+	"github.com/Czcan/TimeLine/pkg/jwt"
 	jwtPkg "github.com/golang-jwt/jwt"
 )
 

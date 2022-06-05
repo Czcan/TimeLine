@@ -1,9 +1,10 @@
 package config
 
 import (
+	"path/filepath"
 	"sync"
 
-	"github.com/Czcan/TimeLine/utils"
+	"github.com/Czcan/TimeLine/pkg/utils"
 	"github.com/jinzhu/configor"
 )
 
@@ -25,12 +26,12 @@ var (
 )
 
 func MustGetAppConfig() AppConfig {
-	root := utils.InferRootDir()
+	root := utils.InferRootDir("config/config.yml")
 	if _AppConfig == nil {
 		once.Do(
 			func() {
 				appConfig := &AppConfig{}
-				err := configor.Load(appConfig, root+"/config.yml")
+				err := configor.Load(appConfig, filepath.Join(root, "config/config.yml"))
 				if err != nil {
 					panic(err)
 				}

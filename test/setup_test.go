@@ -8,8 +8,8 @@ import (
 	"strings"
 
 	"github.com/Czcan/TimeLine/config"
-	"github.com/Czcan/TimeLine/models"
-	"github.com/Czcan/TimeLine/server"
+	"github.com/Czcan/TimeLine/internal/models"
+	"github.com/Czcan/TimeLine/internal/server"
 	"github.com/ddliu/go-httpclient"
 	"github.com/go-chi/chi"
 	"github.com/tidwall/gjson"
@@ -35,9 +35,9 @@ func setup() {
 		panic(err)
 	}
 
-	DB.Migrator().DropTable(&models.User{}, &models.Folder{}, &models.Note{}, 
+	DB.Migrator().DropTable(&models.User{}, &models.Folder{}, &models.Note{},
 		&models.Collection{}, &models.Account{}, &models.Comment{}, &models.Liker{}, &models.Task{})
-	DB.AutoMigrate(&models.User{}, &models.Folder{}, &models.Note{}, 
+	DB.AutoMigrate(&models.User{}, &models.Folder{}, &models.Note{},
 		&models.Collection{}, &models.Account{}, &models.Comment{}, &models.Liker{}, &models.Task{})
 
 	createdData()
